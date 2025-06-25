@@ -28,6 +28,7 @@ builder.Services.AddSwaggerGen();
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICoursesRepository, CourseRepository>();
+builder.Services.AddScoped<ICategoriesRepository, CategoryRepository>();
 
 // =====================================
 // CORS CONFIGURATION
