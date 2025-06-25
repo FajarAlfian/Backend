@@ -115,3 +115,4 @@ D:\CODE THINGS\Backend\backend\obj\Debug\net9.0\refint\backend.dll
 D:\CODE THINGS\Backend\backend\obj\Debug\net9.0\backend.pdb
 D:\CODE THINGS\Backend\backend\obj\Debug\net9.0\backend.genruntimeconfig.cache
 D:\CODE THINGS\Backend\backend\obj\Debug\net9.0\ref\backend.dll
+G:\Fajar\Bootcamp Taldio\D'Languange\backend\backend\obj\Debug\net9.0\backend.sourcelink.json

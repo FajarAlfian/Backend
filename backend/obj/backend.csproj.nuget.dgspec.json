@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "D:\\CODE THINGS\\Backend\\backend\\backend.csproj": {}
+    "G:\\Fajar\\Bootcamp Taldio\\D'Languange\\backend\\backend\\backend.csproj": {}
   },
   "projects": {
-    "D:\\CODE THINGS\\Backend\\backend\\backend.csproj": {
+    "G:\\Fajar\\Bootcamp Taldio\\D'Languange\\backend\\backend\\backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\CODE THINGS\\Backend\\backend\\backend.csproj",
+        "projectUniqueName": "G:\\Fajar\\Bootcamp Taldio\\D'Languange\\backend\\backend\\backend.csproj",
         "projectName": "backend",
-        "projectPath": "D:\\CODE THINGS\\Backend\\backend\\backend.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\CODE THINGS\\Backend\\backend\\obj\\",
+        "projectPath": "G:\\Fajar\\Bootcamp Taldio\\D'Languange\\backend\\backend\\backend.csproj",
+        "packagesPath": "C:\\Users\\fajar\\.nuget\\packages\\",
+        "outputPath": "G:\\Fajar\\Bootcamp Taldio\\D'Languange\\backend\\backend\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\fajar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
