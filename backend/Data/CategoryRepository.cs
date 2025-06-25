@@ -4,79 +4,77 @@ using DlanguageApi.Models;
 
 namespace DlanguageApi.Data
 {
-    public interface ICoursesRepository
+    public interface ICategoriesRepository
     {
-        Task<List<Course>> GetAllCoursesAsync();
-        Task<Course?> GetCourseByIdAsync(int id);
-        Task<int> CreateCourseAsync(Course course);
-        Task<bool> UpdateCourseAsync(Course course);
-        Task<bool> DeleteCourseAsync(int id);
+        Task<List<Category>> GetAllCategoriesAsync();
+        Task<Category?> GetCategoryByIdAsync(int id);
+        Task<int> CreateCategoryAsync(Category category);
+        Task<bool> UpdateCategoryAsync(Category category);
+        Task<bool> DeleteCategoryAsync(int id);
     }
 
-    public class CourseRepository : ICoursesRepository
+    public class CategoryRepository : ICategoriesRepository
     {
         private readonly string _connectionString;
 
-        public CourseRepository(IConfiguration configuration)
+        public CategoryRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
         // Read
-        public async Task<List<Course>> GetAllCoursesAsync()
+        public async Task<List<Category>> GetAllCategoriesAsync()
         {
-            var courses = new List<Course>();
+            var categories = new List<Category>();
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, category_id, created_at, updated_at
-                    FROM ms_courses
-                    ORDER BY course_name";
+                    SELECT category_id, category_name, category_description, created_at, updated_at
+                    FROM ms_category
+                    ORDER BY category_name";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
                     {
-                        courses.Add(new Course
+                        categories.Add(new Category
                         {
-                            course_id = reader.GetInt32("course_id"),
-                            course_name = reader.GetString("course_name"),
-                            course_price = reader.GetInt32("course_price"),
                             category_id = reader.GetInt32("category_id"),
+                            category_name = reader.GetString("category_name"),
+                            category_description = reader.GetString("category_description"),
                             created_at = reader.GetDateTime("created_at"),
                             updated_at = reader.GetDateTime("updated_at")
                         });
                     }
                 }
             }
-            return courses;
+            return categories;
         }
 
         // Read by ID
-        public async Task<Course?> GetCourseByIdAsync(int id)
+        public async Task<Category?> GetCategoryByIdAsync(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, category_id, created_at, updated_at
-                    FROM ms_courses
-                    WHERE course_id = @course_id";
+                    SELECT category_id, category_name, category_description, created_at, updated_at
+                    FROM ms_category
+                    WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@course_id", id);
+                    command.Parameters.AddWithValue("@category_id", id);
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
                         {
-                            return new Course
+                            return new Category
                             {
-                                course_id = reader.GetInt32("course_id"),
-                                course_name = reader.GetString("course_name"),
-                                course_price = reader.GetInt32("course_price"),
                                 category_id = reader.GetInt32("category_id"),
+                                category_name = reader.GetString("category_name"),
+                                category_description = reader.GetString("category_description"),
                                 created_at = reader.GetDateTime("created_at"),
                                 updated_at = reader.GetDateTime("updated_at")
                             };
@@ -88,45 +86,41 @@ namespace DlanguageApi.Data
         }
 
         // Create
-        public async Task<int> CreateCourseAsync(Course course)
+        public async Task<int> CreateCategoryAsync(Category category)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    INSERT INTO ms_courses (course_name, course_price, category_id, created_at, updated_at)
-                    VALUES (@course_name, @course_price, @category_id, @created_at, @updated_at);
+                    INSERT INTO ms_category (category_name, category_description, created_at, updated_at)
+                    VALUES (@category_name, @category_description, @created_at, @updated_at);
                     SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@course_name", course.course_name);
-                    command.Parameters.AddWithValue("@course_price", course.course_price);
-                    command.Parameters.AddWithValue("@category_id", course.category_id);
+                    command.Parameters.AddWithValue("@category_name", category.category_name);
+                    command.Parameters.AddWithValue("@category_description", category.category_description);
                     command.Parameters.AddWithValue("@created_at", DateTime.Now);
                     command.Parameters.AddWithValue("@updated_at", DateTime.Now);
-
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
             }
         }
         // Update
-        public async Task<bool> UpdateCourseAsync(Course course)
+        public async Task<bool> UpdateCategoryAsync(Category category)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    UPDATE ms_courses
-                    SET course_name = @course_name, course_price = @course_price, category_id = @category_id,
-                        updated_at = @updated_at
-                    WHERE course_id = @course_id";
+                    UPDATE ms_category
+                    SET category_name = @category_name, category_description = @category_description, updated_at = @updated_at
+                    WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@course_id", course.course_id);
-                    command.Parameters.AddWithValue("@course_name", course.course_name);
-                    command.Parameters.AddWithValue("@course_price", course.course_price);
-                    command.Parameters.AddWithValue("@category_id", course.category_id);
+                    command.Parameters.AddWithValue("@category_id", category.category_id);
+                    command.Parameters.AddWithValue("@category_name", category.category_name);
+                    command.Parameters.AddWithValue("@category_description", category.category_description);
                     command.Parameters.AddWithValue("@updated_at", DateTime.Now);
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
@@ -135,17 +129,17 @@ namespace DlanguageApi.Data
             }
         }
         // Delete
-        public async Task<bool> DeleteCourseAsync(int id)
+        public async Task<bool> DeleteCategoryAsync(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    DELETE FROM ms_courses
-                    WHERE course_id = @course_id";
+                    DELETE FROM ms_category
+                    WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@course_id", id);
+                    command.Parameters.AddWithValue("@category_id", id);
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
                 }

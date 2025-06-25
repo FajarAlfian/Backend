@@ -2,19 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DlanguageApi.Models
 {
-    public class Course
+    public class Category
     {
-        public int course_id { get; set; }
+        public int category_id { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string course_name { get; set; } = string.Empty;
+        public string category_name { get; set; } = string.Empty;
 
         [Required]
-        public int course_price { get; set; }
-
-        [Required]
-        public int category_id { get; set; }
+        [StringLength(100)]
+        public string category_description { get; set; } = string.Empty;
 
         public DateTime created_at { get; set; } = DateTime.Now; 
         public DateTime updated_at { get; set; } = DateTime.Now; 

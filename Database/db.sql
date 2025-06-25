@@ -12,12 +12,21 @@ CREATE TABLE ms_user (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Table ms_corses
+-- Table ms_courses
 CREATE TABLE ms_courses (
   course_id INT AUTO_INCREMENT PRIMARY KEY,
   course_name VARCHAR(255),
   course_price INT,
-  language_id INT,
+  category_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Table ms_category
+CREATE TABLE ms_category (
+  category_id INT AUTO_INCREMENT PRIMARY KEY,
+  category_name VARCHAR(255),
+  category_description VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
