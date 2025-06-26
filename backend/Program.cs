@@ -27,6 +27,7 @@ builder.Services.AddSwaggerGen();
 // IProductRepository akan di-resolve ke ProductRepository
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<ICoursesRepository, CourseRepository>();
 builder.Services.AddScoped<ICategoriesRepository, CategoryRepository>();
 
