@@ -30,3 +30,27 @@ CREATE TABLE ms_category (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Table tr_cart_product
+CREATE TABLE tr_cart_product (
+  cart_product_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  course_id INT,
+  course_price INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_user
+    FOREIGN KEY (user_id)
+    REFERENCES ms_user(user_id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+
+-- Foreign key constraint for ms_courses referencing ms_category
+ALTER TABLE ms_courses
+ADD CONSTRAINT fk_category
+FOREIGN KEY (category_id)
+REFERENCES ms_category(category_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
