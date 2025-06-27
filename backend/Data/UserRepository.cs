@@ -45,8 +45,8 @@ namespace DlanguageApi.Data
                             username = reader.GetString("username"),
                             email = reader.GetString("email"),
                             password = reader.GetString("password"),
-                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), // Use Utc
-                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime() // Use Utc
+                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                         });
                     }
                 }
@@ -76,8 +76,8 @@ namespace DlanguageApi.Data
                                 username = reader.GetString("username"),
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), // Use Utc
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() // Use Utc
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
                         }
                     }
@@ -109,8 +109,8 @@ namespace DlanguageApi.Data
                                 username = reader.GetString("username"),
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), // Use Utc
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() // Use Utc
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
                         }
                     }
@@ -133,8 +133,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@username", user.username);
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
-                    command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime()); // Use Utc
-                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); // Use Utc
+                    command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime()); 
+                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
@@ -159,7 +159,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@username", user.username);
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
-                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); // Use Utc
+                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
                 }

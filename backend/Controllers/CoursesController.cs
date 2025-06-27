@@ -104,7 +104,7 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingCourse = await _coursesRepository.GetCourseByIdAsync(id);
-                if (existingCourse == null) // 404 Not Found
+                if (existingCourse == null) 
                     return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _coursesRepository.DeleteCourseAsync(id);

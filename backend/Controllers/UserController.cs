@@ -104,7 +104,7 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingUser = await _userRepository.GetUserByIdAsync(id);
-                if (existingUser == null) // 404 Not Found
+                if (existingUser == null) 
                     return NotFound(ApiResult<object>.Error($"User dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _userRepository.DeleteUserAsync(id);

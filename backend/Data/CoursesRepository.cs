@@ -45,8 +45,8 @@ namespace DlanguageApi.Data
                             course_name = reader.GetString("course_name"),
                             course_price = reader.GetInt32("course_price"),
                             category_id = reader.GetInt32("category_id"),
-                            created_at = reader.GetDateTime("created_at"),
-                            updated_at = reader.GetDateTime("updated_at")
+                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                         });
                     }
                 }
@@ -77,8 +77,8 @@ namespace DlanguageApi.Data
                                 course_name = reader.GetString("course_name"),
                                 course_price = reader.GetInt32("course_price"),
                                 category_id = reader.GetInt32("category_id"),
-                                created_at = reader.GetDateTime("created_at"),
-                                updated_at = reader.GetDateTime("updated_at")
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
                         }
                     }
@@ -102,8 +102,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_name", course.course_name);
                     command.Parameters.AddWithValue("@course_price", course.course_price);
                     command.Parameters.AddWithValue("@category_id", course.category_id);
-                    command.Parameters.AddWithValue("@created_at", DateTime.Now);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
@@ -125,9 +125,9 @@ namespace DlanguageApi.Data
                 {
                     command.Parameters.AddWithValue("@course_id", course.course_id);
                     command.Parameters.AddWithValue("@course_name", course.course_name);
-                    command.Parameters.AddWithValue("@course_price", course.course_price);
-                    command.Parameters.AddWithValue("@category_id", course.category_id);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                    command.Parameters.AddWithValue("@course_price", course.course_price); 
+                    command.Parameters.AddWithValue("@category_id", course.category_id); 
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
