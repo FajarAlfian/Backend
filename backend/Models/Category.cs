@@ -13,8 +13,8 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100)]
         public string category_description { get; set; } = string.Empty;
-
-        public DateTime created_at { get; set; } = DateTime.Now; 
-        public DateTime updated_at { get; set; } = DateTime.Now; 
+ 
+        public DateTime created_at { get; set; } = DateTime.UtcNow; 
+        public DateTime updated_at { get; set; } = DateTime.UtcNow; 
     }
 }

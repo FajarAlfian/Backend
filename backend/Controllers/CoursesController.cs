@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DlanguageApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CoursesController : ControllerBase
@@ -23,12 +25,12 @@ namespace DlanguageApi.Controllers
             try
             {
                 var courses = await _coursesRepository.GetAllCoursesAsync();
-                return Ok(courses);
+                return Ok(ApiResult<List<Course>>.SuccessResult(courses, "Daftar kursus berhasil diambil", 200));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil daftar kursus");
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -39,13 +41,13 @@ namespace DlanguageApi.Controllers
             {
                 var course = await _coursesRepository.GetCourseByIdAsync(id);
                 if (course == null)
-                    return NotFound($"Kursus dengan ID {id} tidak ditemukan");
-                return Ok(course);
+                    return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
+                return Ok(ApiResult<Course>.SuccessResult(course, "Kursus berhasil diambil", 200));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil kursus dengan ID {course_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -55,16 +57,16 @@ namespace DlanguageApi.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+                    return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
                 var course_id = await _coursesRepository.CreateCourseAsync(course);
                 course.course_id = course_id;
-                return CreatedAtAction(nameof(GetCourse), new { id = course_id }, course);
+                return CreatedAtAction(nameof(GetCourse), new { id = course_id }, ApiResult<Course>.SuccessResult(course, "Kursus berhasil dibuat", 201));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat membuat kursus baru");
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -74,25 +76,25 @@ namespace DlanguageApi.Controllers
             try
             {
                 if (id != course.course_id)
-                    return BadRequest("ID kursus tidak sesuai");
+                    return BadRequest(ApiResult<object>.Error("ID kursus tidak sesuai", 400));
 
                 if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+                    return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
                 var existingCourse = await _coursesRepository.GetCourseByIdAsync(id);
                 if (existingCourse == null)
-                    return NotFound($"Kursus dengan ID {id} tidak ditemukan");
+                    return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _coursesRepository.UpdateCourseAsync(course);
                 if (success)
                     return NoContent();
 
-                return StatusCode(500, "Gagal mengupdate kursus");
+                return StatusCode(500, ApiResult<object>.Error("Gagal mengupdate kursus", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengupdate kursus dengan ID {course_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -102,19 +104,19 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingCourse = await _coursesRepository.GetCourseByIdAsync(id);
-                if (existingCourse == null)
-                    return NotFound($"Kursus dengan ID {id} tidak ditemukan");
+                if (existingCourse == null) 
+                    return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _coursesRepository.DeleteCourseAsync(id);
                 if (success)
                     return NoContent();
 
-                return StatusCode(500, "Gagal menghapus kursus");
+                return StatusCode(500, ApiResult<object>.Error("Gagal menghapus kursus", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat menghapus kursus dengan ID {course_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
     }

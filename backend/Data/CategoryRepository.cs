@@ -44,8 +44,8 @@ namespace DlanguageApi.Data
                             category_id = reader.GetInt32("category_id"),
                             category_name = reader.GetString("category_name"),
                             category_description = reader.GetString("category_description"),
-                            created_at = reader.GetDateTime("created_at"),
-                            updated_at = reader.GetDateTime("updated_at")
+                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
+                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
                     }
                 }
@@ -75,8 +75,8 @@ namespace DlanguageApi.Data
                                 category_id = reader.GetInt32("category_id"),
                                 category_name = reader.GetString("category_name"),
                                 category_description = reader.GetString("category_description"),
-                                created_at = reader.GetDateTime("created_at"),
-                                updated_at = reader.GetDateTime("updated_at")
+                            created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
                         }
                     }
@@ -99,8 +99,8 @@ namespace DlanguageApi.Data
                 {
                     command.Parameters.AddWithValue("@category_name", category.category_name);
                     command.Parameters.AddWithValue("@category_description", category.category_description);
-                    command.Parameters.AddWithValue("@created_at", DateTime.Now);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow); 
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
@@ -120,8 +120,8 @@ namespace DlanguageApi.Data
                 {
                     command.Parameters.AddWithValue("@category_id", category.category_id);
                     command.Parameters.AddWithValue("@category_name", category.category_name);
-                    command.Parameters.AddWithValue("@category_description", category.category_description);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                    command.Parameters.AddWithValue("@category_description", category.category_description); 
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;

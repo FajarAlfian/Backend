@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DlanguageApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CategoriesController : ControllerBase
@@ -23,12 +25,12 @@ namespace DlanguageApi.Controllers
             try
             {
                 var categories = await _categoriesRepository.GetAllCategoriesAsync();
-                return Ok(categories);
+                return Ok(ApiResult<List<Category>>.SuccessResult(categories, "Kategori berhasil diambil", 200));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil data kategori");
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -39,13 +41,13 @@ namespace DlanguageApi.Controllers
             {
                 var category = await _categoriesRepository.GetCategoryByIdAsync(id);
                 if (category == null)
-                    return NotFound($"Kategori dengan ID {id} tidak ditemukan");
-                return Ok(category);
+                    return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
+                return Ok(ApiResult<Category>.SuccessResult(category, "Kategori berhasil diambil", 200));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil kategori dengan ID {category_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -55,16 +57,16 @@ namespace DlanguageApi.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+                    return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
                 var category_id = await _categoriesRepository.CreateCategoryAsync(category);
                 category.category_id = category_id;
-                return CreatedAtAction(nameof(GetCategory), new { id = category_id }, category);
+                return CreatedAtAction(nameof(GetCategory), new { id = category_id }, ApiResult<Category>.SuccessResult(category, "Kategori berhasil dibuat", 201));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat membuat kategori baru");
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -74,25 +76,25 @@ namespace DlanguageApi.Controllers
             try
             {
                 if (id != category.category_id)
-                    return BadRequest("ID kategori tidak sesuai");
+                    return BadRequest(ApiResult<object>.Error("ID kategori tidak sesuai", 400));
 
                 if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+                    return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
                 var existingCategory = await _categoriesRepository.GetCategoryByIdAsync(id);
                 if (existingCategory == null)
-                    return NotFound($"Kategori dengan ID {id} tidak ditemukan");
+                    return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _categoriesRepository.UpdateCategoryAsync(category);
                 if (success)
-                    return NoContent();
+                    return NoContent(); 
 
-                return StatusCode(500, "Gagal mengupdate kategori");
+                return StatusCode(500, ApiResult<object>.Error("Gagal mengupdate kategori", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengupdate kategori dengan ID {course_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
@@ -102,19 +104,19 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingCategory = await _categoriesRepository.GetCategoryByIdAsync(id);
-                if (existingCategory == null)
-                    return NotFound($"Kategori dengan ID {id} tidak ditemukan");
+                if (existingCategory == null) 
+                    return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _categoriesRepository.DeleteCategoryAsync(id);
                 if (success)
                     return NoContent();
 
-                return StatusCode(500, "Gagal menghapus kategori");
+                return StatusCode(500, ApiResult<object>.Error("Gagal menghapus kategori", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat menghapus kategori dengan ID {category_id}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
     }
