@@ -50,6 +50,22 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
+        [HttpGet("category/{nama}")]
+        public async Task<ActionResult<Category>> GetCategoryByName(string nama)
+        {
+            try
+            {
+                var category = await _categoriesRepository.GetCategoryByNameAsync(nama);
+                if (category == null)
+                    return NotFound(ApiResult<object>.Error($"Kategori dengan nama {nama} tidak ditemukan", 404));
+                return Ok(ApiResult<Category>.SuccessResult(category, "Kategori berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil kategori dengan nama {category_name}", nama);
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
 
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryRequest request)

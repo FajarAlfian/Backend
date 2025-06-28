@@ -8,6 +8,7 @@ namespace DlanguageApi.Data
     {
         Task<List<Category>> GetAllCategoriesAsync();
         Task<Category?> GetCategoryByIdAsync(int id);
+        Task<Category?> GetCategoryByNameAsync(string nama);
         Task<int> CreateCategoryAsync(Category category);
         Task<bool> UpdateCategoryAsync(Category category);
         Task<bool> DeleteCategoryAsync(int id);
@@ -86,6 +87,39 @@ namespace DlanguageApi.Data
             }
             return null;
         }
+        
+        // Read by name
+        public async Task<Category?> GetCategoryByNameAsync(string nama)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string queryString = @"
+                    SELECT category_id, category_name, category_description, category_image, created_at, updated_at
+                    FROM ms_category
+                    WHERE category_name = @category_name";
+                using (var command = new MySqlCommand(queryString, connection))
+                {
+                    command.Parameters.AddWithValue("@category_name", nama);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new Category
+                            {
+                                category_id = reader.GetInt32("category_id"),
+                                category_name = reader.GetString("category_name"),
+                                category_description = reader.GetString("category_description"),
+                                category_image = reader.GetString("category_image"),
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
         // Create
         public async Task<int> CreateCategoryAsync(Category category)
@@ -102,8 +136,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@category_name", category.category_name);
                     command.Parameters.AddWithValue("@category_description", category.category_description);
                     command.Parameters.AddWithValue("@category_image", category.category_image);
-                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow); 
-                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
+                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
