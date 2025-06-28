@@ -52,40 +52,51 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory([FromBody] Category category)
+        public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryRequest request)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
-
-                var category_id = await _categoriesRepository.CreateCategoryAsync(category);
-                category.category_id = category_id;
-                return CreatedAtAction(nameof(GetCategory), new { id = category_id }, ApiResult<Category>.SuccessResult(category, "Kategori berhasil dibuat", 201));
+                var newCategory = new Category
+                {
+                    category_name = request.category_name,
+                    category_description = request.category_description,
+                    category_image = request.category_image,
+                    created_at = DateTime.Now
+                };
+                var category_id = await _categoriesRepository.CreateCategoryAsync(newCategory);
+                newCategory.category_id = category_id;
+                return Ok(ApiResult<object>.SuccessResult(new { category_id, category_name = newCategory.category_name, category_description = newCategory.category_description, category_image = newCategory.category_image }, "Add Category berhasil", 201));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saat membuat kategori baru");
+                _logger.LogError(ex, "Error during user registration.");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryRequest request)
         {
             try
             {
-                if (id != category.category_id)
-                    return BadRequest(ApiResult<object>.Error("ID kategori tidak sesuai", 400));
-
+                // if (id != category.category_id)
+                //     return BadRequest(ApiResult<object>.Error("ID kategori tidak sesuai", 400));
                 if (!ModelState.IsValid)
                     return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
                 var existingCategory = await _categoriesRepository.GetCategoryByIdAsync(id);
                 if (existingCategory == null)
                     return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
-
-                var success = await _categoriesRepository.UpdateCategoryAsync(category);
+                var updateData = new Category
+                {
+                    category_id = id,
+                    category_name = request.category_name,
+                    category_description = request.category_description,
+                    category_image = request.category_name
+                };
+                var success = await _categoriesRepository.UpdateCategoryAsync(updateData);
                 if (success)
                     return NoContent(); 
 
@@ -118,6 +129,6 @@ namespace DlanguageApi.Controllers
                 _logger.LogError(ex, "Error saat menghapus kategori dengan ID {category_id}", id);
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
-        }
-    }
+        }
+    }
 }
