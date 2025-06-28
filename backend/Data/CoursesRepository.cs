@@ -31,9 +31,10 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, course_image, course_description, category_id, created_at, updated_at
-                    FROM ms_courses
-                    ORDER BY course_name";
+                    SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, cat.category_name, c.created_at, c.updated_at
+                    FROM ms_courses c
+                    LEFT JOIN ms_category cat ON c.category_id = cat.category_id
+                    ORDER BY c.course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -47,6 +48,7 @@ namespace DlanguageApi.Data
                             course_image = reader.GetString("course_image"),
                             course_description = reader.GetString("course_description"),
                             category_id = reader.GetInt32("category_id"),
+                            category_name = reader.GetString("category_name"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                         });
@@ -63,9 +65,12 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, course_image, course_description, category_id, created_at, updated_at
-                    FROM ms_courses
-                    WHERE course_id = @course_id";
+                    SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, cat.category_name, c.created_at, c.updated_at
+                    FROM ms_courses c
+                    LEFT JOIN ms_category cat ON c.category_id = cat.category_id
+                    WHERE c.category_id = @category_id
+                    order by c.course_id";
+
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@course_id", id);
@@ -81,6 +86,7 @@ namespace DlanguageApi.Data
                                 course_image = reader.GetString("course_image"),
                                 course_description = reader.GetString("course_description"),
                                 category_id = reader.GetInt32("category_id"),
+                                category_name = reader.IsDBNull(reader.GetOrdinal("category_name")) ? string.Empty : reader.GetString("category_name"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };

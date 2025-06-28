@@ -20,6 +20,8 @@ namespace DlanguageApi.Models
         [Required]
         public int category_id { get; set; }
 
+        public string category_name { get; set; } = string.Empty;
+
         public DateTime created_at { get; set; } = DateTime.UtcNow; 
         public DateTime updated_at { get; set; } = DateTime.UtcNow; 
     }
