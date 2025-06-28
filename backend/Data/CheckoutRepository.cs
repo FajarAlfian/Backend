@@ -36,8 +36,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_id", checkout.course_id);
                     command.Parameters.AddWithValue("@course_price", checkout.course_price);
                     command.Parameters.AddWithValue("@user_id", checkout.user_id);
-                    command.Parameters.AddWithValue("@created_at", DateTime.Now);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow); 
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
                     await command.ExecuteNonQueryAsync();
                 }
             }
@@ -68,8 +68,8 @@ namespace DlanguageApi.Data
                                 course_name = reader.GetString("course_name"),
                                 course_price = reader.GetInt32("course_price"),
                                 user_id = reader.GetInt32("user_id"),
-                                created_at = reader.GetDateTime("created_at"),
-                                updated_at = reader.GetDateTime("updated_at")
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             });
                         }
                     }

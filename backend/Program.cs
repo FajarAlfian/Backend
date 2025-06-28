@@ -1,4 +1,7 @@
 // Import namespace untuk ProductRepository
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using DlanguageApi.Data;
 
 // =====================================
@@ -17,7 +20,28 @@ builder.Services.AddEndpointsApiExplorer();
 
 // AddSwaggerGen() = mendaftarkan Swagger generator
 // Swagger = tools untuk generate dokumentasi API otomatis
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            new string[]{}
+        }
+    });
+});
 
 // =====================================
 // DEPENDENCY INJECTION REGISTRATION
@@ -30,6 +54,26 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<ICoursesRepository, CourseRepository>();
 builder.Services.AddScoped<ICategoriesRepository, CategoryRepository>();
+
+// Add authentication services
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key not found in configuration")))
+    };
+});
 
 // =====================================
 // CORS CONFIGURATION
@@ -78,6 +122,7 @@ app.UseHttpsRedirection();
 // UseCors() = middleware untuk enable CORS policy yang sudah dikonfigurasi
 // Harus dipanggil sebelum UseAuthorization dan MapControllers
 app.UseCors();
+app.UseAuthentication(); // Must be before UseAuthorization
 
 // UseAuthorization() = middleware untuk authorization/authentication
 // Meskipun belum implement auth, disimpan untuk future implementation
