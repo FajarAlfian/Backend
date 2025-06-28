@@ -20,6 +20,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Category>>> GetCategories()
         {
             try
@@ -35,6 +36,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
             try
@@ -94,7 +96,7 @@ namespace DlanguageApi.Controllers
                     category_id = id,
                     category_name = request.category_name,
                     category_description = request.category_description,
-                    category_image = request.category_name
+                    category_image = request.category_image
                 };
                 var success = await _categoriesRepository.UpdateCategoryAsync(updateData);
                 if (success)

@@ -12,6 +12,10 @@ namespace DlanguageApi.Models
 
         [Required]
         public int course_price { get; set; }
+        [Required]
+        public string course_image { get; set; } = string.Empty;
+        [Required]
+        public string course_description { get; set; } = string.Empty;
 
         [Required]
         public int category_id { get; set; }

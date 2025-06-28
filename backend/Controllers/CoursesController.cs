@@ -20,6 +20,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Course>>> GetCourses()
         {
             try
@@ -35,6 +36,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
             try
