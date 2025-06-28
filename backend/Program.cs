@@ -54,6 +54,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<ICoursesRepository, CourseRepository>();
 builder.Services.AddScoped<ICategoriesRepository, CategoryRepository>();
+builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 
 // Add authentication services
 builder.Services.AddAuthentication(options =>
