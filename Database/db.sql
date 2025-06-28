@@ -37,7 +37,7 @@ CREATE TABLE ms_category (
   category_id INT AUTO_INCREMENT PRIMARY KEY,
   category_name VARCHAR(255) NOT NULL,
   category_image VARCHAR(255),
-  category_description VARCHAR(255),
+  category_description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -48,6 +48,7 @@ CREATE TABLE ms_courses (
   course_name VARCHAR(255) NOT NULL,
   course_price INT NOT NULL,
   course_image VARCHAR(255),
+  course_description TEXT,
   category_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

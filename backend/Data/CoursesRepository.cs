@@ -31,7 +31,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, category_id, created_at, updated_at
+                    SELECT course_id, course_name, course_price, course_image, course_description, category_id, created_at, updated_at
                     FROM ms_courses
                     ORDER BY course_name";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -44,6 +44,8 @@ namespace DlanguageApi.Data
                             course_id = reader.GetInt32("course_id"),
                             course_name = reader.GetString("course_name"),
                             course_price = reader.GetInt32("course_price"),
+                            course_image = reader.GetString("course_image"),
+                            course_description = reader.GetString("course_description"),
                             category_id = reader.GetInt32("category_id"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
@@ -61,7 +63,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT course_id, course_name, course_price, category_id, created_at, updated_at
+                    SELECT course_id, course_name, course_price, course_image, course_description, category_id, created_at, updated_at
                     FROM ms_courses
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -76,6 +78,8 @@ namespace DlanguageApi.Data
                                 course_id = reader.GetInt32("course_id"),
                                 course_name = reader.GetString("course_name"),
                                 course_price = reader.GetInt32("course_price"),
+                                course_image = reader.GetString("course_image"),
+                                course_description = reader.GetString("course_description"),
                                 category_id = reader.GetInt32("category_id"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
@@ -94,13 +98,15 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    INSERT INTO ms_courses (course_name, course_price, category_id, created_at, updated_at)
-                    VALUES (@course_name, @course_price, @category_id, @created_at, @updated_at);
+                    INSERT INTO ms_courses (course_name, course_price, course_image, course_description, category_id, created_at, updated_at)
+                    VALUES (@course_name, @course_price, @course_image, @course_description, @category_id, @created_at, @updated_at);
                     SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@course_name", course.course_name);
                     command.Parameters.AddWithValue("@course_price", course.course_price);
+                    command.Parameters.AddWithValue("@course_image", course.course_image);
+                    command.Parameters.AddWithValue("@course_description", course.course_description);
                     command.Parameters.AddWithValue("@category_id", course.category_id);
                     command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
@@ -118,7 +124,7 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     UPDATE ms_courses
-                    SET course_name = @course_name, course_price = @course_price, category_id = @category_id,
+                    SET course_name = @course_name, course_price = @course_price, course_image = @course_image, course_description = @course_description, category_id = @category_id,
                         updated_at = @updated_at
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -126,6 +132,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_id", course.course_id);
                     command.Parameters.AddWithValue("@course_name", course.course_name);
                     command.Parameters.AddWithValue("@course_price", course.course_price); 
+                    command.Parameters.AddWithValue("@course_image", course.course_image);  
+                    command.Parameters.AddWithValue("@course_description", course.course_description);
                     command.Parameters.AddWithValue("@category_id", course.category_id); 
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
