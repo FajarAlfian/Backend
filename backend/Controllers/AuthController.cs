@@ -48,13 +48,14 @@ namespace DlanguageApi.Controllers
                     username = request.Username,
                     email = request.Email,
                     password = hashedPassword,
+                    role = "member",
                     updated_at = DateTime.Now
                 };
 
                 var userId = await _userRepository.CreateUserAsync(newUser);
                 newUser.user_id = userId;
 
-                return Ok(ApiResult<object>.SuccessResult(new { userId = newUser.user_id, username = newUser.username, email = newUser.email }, "Registrasi berhasil", 201));
+                return Ok(ApiResult<object>.SuccessResult(new { userId = newUser.user_id, username = newUser.username, email = newUser.email, role = newUser.role }, "Registrasi berhasil", 201));
             }
             catch (Exception ex)
             {
@@ -88,6 +89,7 @@ namespace DlanguageApi.Controllers
                     new Claim(JwtRegisteredClaimNames.Sub, user.username),
                     new Claim(JwtRegisteredClaimNames.Email, user.email),
                     new Claim("userId", user.user_id.ToString()),
+                    new Claim(ClaimTypes.Role, user.role),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
@@ -105,6 +107,7 @@ namespace DlanguageApi.Controllers
                     UserId = user.user_id,
                     Username = user.username,
                     Email = user.email,
+                    Role = user.role,
                     Token = tokenString
                 };
 

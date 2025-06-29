@@ -17,6 +17,7 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100)]
         public string password { get; set; } = string.Empty;
+        public string role { get; set; } = "member";
  
         public DateTime created_at { get; set; } = DateTime.UtcNow; 
         public DateTime updated_at { get; set; } = DateTime.UtcNow; 
@@ -28,6 +29,7 @@ namespace DlanguageApi.Models
         public int UserId { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = "member";
         public string Token { get; set; } = string.Empty;
     }
 

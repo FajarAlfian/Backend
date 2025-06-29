@@ -31,7 +31,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, created_at, updated_at
+                    SELECT user_id, username, email, password, role, created_at, updated_at
                     FROM ms_user
                     ORDER BY username";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -45,6 +45,7 @@ namespace DlanguageApi.Data
                             username = reader.GetString("username"),
                             email = reader.GetString("email"),
                             password = reader.GetString("password"),
+                            role = reader.GetString("role"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                         });
@@ -60,7 +61,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, created_at, updated_at
+                    SELECT user_id, username, email, password, role, created_at, updated_at
                     FROM ms_user
                     WHERE user_id = @user_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -76,6 +77,7 @@ namespace DlanguageApi.Data
                                 username = reader.GetString("username"),
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
+                                role = reader.GetString("role"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
@@ -93,7 +95,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, created_at, updated_at
+                    SELECT user_id, username, email, password, role, created_at, updated_at
                     FROM ms_user
                     WHERE email = @email";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -109,6 +111,7 @@ namespace DlanguageApi.Data
                                 username = reader.GetString("username"),
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
+                                role = reader.GetString("role"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
@@ -125,14 +128,15 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    INSERT INTO ms_user (username, email, password, created_at, updated_at)
-                    VALUES (@username, @email, @password, @created_at, @updated_at);
+                    INSERT INTO ms_user (username, email, password, role, created_at, updated_at)
+                    VALUES (@username, @email, @password, @role, @created_at, @updated_at);
                     SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@username", user.username);
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
+                    command.Parameters.AddWithValue("@role", user.role);
                     command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime()); 
                     command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
                     var result = await command.ExecuteScalarAsync();
@@ -151,6 +155,7 @@ namespace DlanguageApi.Data
                     SET username = @username,
                         email = @email,
                         password = @password,
+                        role = @role,
                         updated_at = @updated_at
                     WHERE user_id = @user_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -159,6 +164,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@username", user.username);
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
+                    command.Parameters.AddWithValue("@role", user.role);
                     command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
