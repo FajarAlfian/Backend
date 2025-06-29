@@ -44,7 +44,7 @@ public class CheckoutController : ControllerBase
                 course_name = course.course_name,
                 course_price = course.course_price,
                 user_id = userId,
-                schedule_course_id = scheduleCourseId, // <-- gunakan schedule_course_id dari tr_schedule_course
+                schedule_course_id = scheduleCourseId,
                 created_at = DateTime.Now,
                 updated_at = DateTime.Now
             };
@@ -54,8 +54,6 @@ public class CheckoutController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log error ke console/log file
-            Console.WriteLine(ex.ToString());
             return StatusCode(500, ApiResult<object>.Error(
                 $"Terjadi kesalahan server: {ex.Message}", 500));
         }
@@ -80,8 +78,6 @@ public class CheckoutController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log error ke console/log file
-            Console.WriteLine(ex.ToString());
             return StatusCode(500, ApiResult<object>.Error(
                 $"Terjadi kesalahan server: {ex.Message}", 500));
         }
@@ -106,8 +102,6 @@ public class CheckoutController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log error ke console/log file
-            Console.WriteLine(ex.ToString());
             return StatusCode(500, ApiResult<object>.Error(
                 $"Terjadi kesalahan server: {ex.Message}", 500));
         }

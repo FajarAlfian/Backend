@@ -6,6 +6,7 @@ namespace DlanguageApi.Models
     {   
         public int invoice_id { get; set; }
         public string invoice_number { get; set; } = string.Empty;
+        
         public string invoice_date { get; set; } = string.Empty;
 
         public int user_id { get; set; }
@@ -14,9 +15,9 @@ namespace DlanguageApi.Models
         public int payment_method_id { get; set; }
         public string payment_method_name { get; set; } = string.Empty;
         public string category_name { get; set; } = string.Empty;
-        public int total_course { get; set; } = 0;
+        public int total_courses { get; set; } = 0;
 
-        public bool is_paid { get; set; } = false;
+        public bool isPaid { get; set; } = false;
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
@@ -29,13 +30,10 @@ namespace DlanguageApi.Models
         public int user_id { get; set; }
 
         [Required]
-        public double total_price { get; set; }
-
-        [Required]
         public int payment_method_id { get; set; }
-        
         [Required]
         public string payment_method_name { get; set; } = string.Empty;
+        
     }
     public class InvoiceUpdateRequest
     {
@@ -45,16 +43,14 @@ namespace DlanguageApi.Models
         public int user_id { get; set; }
 
         [Required]
-        public double total_price { get; set; }
-
-        [Required]
         public int payment_method_id { get; set; }
-        [Required]
+
         public string payment_method_name { get; set; } = string.Empty;
+    
 
         [Required]
-        public bool is_paid { get; set; } = false;
+        public bool isPaid { get; set; } = false;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
     }
 }
-    
+
