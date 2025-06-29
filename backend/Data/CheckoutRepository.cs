@@ -31,7 +31,8 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string query = @"
                     INSERT INTO tr_cart_product (user_id, course_id, schedule_course_id, course_price, created_at, updated_at)
-                    VALUES (@user_id, @course_id, @schedule_course_id, @course_price, @created_at, @updated_at)";
+                    VALUES (@user_id, @course_id, @schedule_course_id, @course_price, @created_at, @updated_at);
+                    SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", checkout.user_id);
@@ -40,7 +41,9 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_price", checkout.course_price);
                     command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
-                    await command.ExecuteNonQueryAsync();
+
+                    var result = await command.ExecuteScalarAsync();
+                    checkout.cart_product_id = Convert.ToInt32(result); 
                 }
             }
         }

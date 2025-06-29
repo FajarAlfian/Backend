@@ -95,7 +95,7 @@ namespace DlanguageApi.Controllers
                     );
                 }
 
-                await _checkoutRepository.ClearUserCartAsync(request.user_id);
+                //await _checkoutRepository.ClearUserCartAsync(request.user_id);
 
                 return CreatedAtAction(nameof(GetInvoice), new { id = invoice_id }, ApiResult<Invoice>.SuccessResult(invoice, "Invoice berhasil dibuat", 201));
             }
