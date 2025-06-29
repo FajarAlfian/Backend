@@ -20,6 +20,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ScheduleCourse>>> GetScheduleCourse()
         {
             try
@@ -35,6 +36,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ScheduleCourse>> GetScheduleCourse(int id)
         {
             try
@@ -52,6 +54,7 @@ namespace DlanguageApi.Controllers
         }
 
         [HttpGet("course/{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
         {
             try
@@ -66,7 +69,7 @@ namespace DlanguageApi.Controllers
                 _logger.LogError(ex, "Error saat mengambil data schedule course");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
-            
+
         }
 
         [HttpPost]

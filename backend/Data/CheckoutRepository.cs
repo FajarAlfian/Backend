@@ -25,17 +25,21 @@ namespace DlanguageApi.Data
 
         public async Task AddToCheckoutAsync(Checkout checkout)
         {
+            // Debug: cek nilai yang dikirim
+            Console.WriteLine($"user_id: {checkout.user_id}, course_id: {checkout.course_id}, schedule_course_id: {checkout.schedule_course_id}, course_price: {checkout.course_price}");
+
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string query = @"
-                    INSERT INTO tr_cart_product (course_id, course_price, user_id, created_at, updated_at)
-                    VALUES (@course_id, @course_price, @user_id, @created_at, @updated_at)";
+                    INSERT INTO tr_cart_product (user_id, course_id, schedule_course_id, course_price, created_at, updated_at)
+                    VALUES (@user_id, @course_id, @schedule_course_id, @course_price, @created_at, @updated_at)";
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@course_id", checkout.course_id);
-                    command.Parameters.AddWithValue("@course_price", checkout.course_price);
                     command.Parameters.AddWithValue("@user_id", checkout.user_id);
+                    command.Parameters.AddWithValue("@course_id", checkout.course_id);
+                    command.Parameters.AddWithValue("@schedule_course_id", checkout.schedule_course_id);
+                    command.Parameters.AddWithValue("@course_price", checkout.course_price);
                     command.Parameters.AddWithValue("@created_at", DateTime.UtcNow); 
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
                     await command.ExecuteNonQueryAsync();

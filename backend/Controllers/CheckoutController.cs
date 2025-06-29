@@ -19,8 +19,8 @@ public class CheckoutController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> AddToCheckout([FromQuery] int courseId)
-    { 
+    public async Task<IActionResult> AddToCheckout([FromQuery] int courseId, [FromQuery] int scheduleCourseId)
+    {
         try
         {
             // Ambil userId dari token
@@ -43,15 +43,21 @@ public class CheckoutController : ControllerBase
                 course_id = course.course_id,
                 course_name = course.course_name,
                 course_price = course.course_price,
-                user_id = userId
+                user_id = userId,
+                schedule_course_id = scheduleCourseId, // <-- gunakan schedule_course_id dari tr_schedule_course
+                created_at = DateTime.Now,
+                updated_at = DateTime.Now
             };
 
             await _checkoutRepository.AddToCheckoutAsync(checkout);
             return Ok(ApiResult<object>.SuccessResult(checkout, "Course added to checkout", 200));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server saat menambahkan course ke checkout", 500));
+            // Log error ke console/log file
+            Console.WriteLine(ex.ToString());
+            return StatusCode(500, ApiResult<object>.Error(
+                $"Terjadi kesalahan server: {ex.Message}", 500));
         }
     }
 
@@ -72,9 +78,12 @@ public class CheckoutController : ControllerBase
             var result = new { items, total };
             return Ok(ApiResult<object>.SuccessResult(result, "Checkout retrieved successfully", 200));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server saat mengambil checkout", 500));
+            // Log error ke console/log file
+            Console.WriteLine(ex.ToString());
+            return StatusCode(500, ApiResult<object>.Error(
+                $"Terjadi kesalahan server: {ex.Message}", 500));
         }
     }
 
@@ -95,9 +104,12 @@ public class CheckoutController : ControllerBase
                 return NotFound(ApiResult<object>.Error("Course tidak ditemukan di checkout user", 404));
             return Ok(ApiResult<object>.SuccessResult("Course berhasil dihapus dari checkout", 200));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server saat menghapus course dari checkout", 500));
+            // Log error ke console/log file
+            Console.WriteLine(ex.ToString());
+            return StatusCode(500, ApiResult<object>.Error(
+                $"Terjadi kesalahan server: {ex.Message}", 500));
         }
     }
 }

@@ -14,12 +14,6 @@ CREATE TABLE ms_user (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ms_cart
-CREATE TABLE ms_cart (
-  cart_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES ms_user(user_id)
-);
 
 -- ms_profile
 CREATE TABLE ms_profile (
@@ -58,7 +52,7 @@ CREATE TABLE ms_courses (
 -- ms_schedule
 CREATE TABLE ms_schedule (
   schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-  schedule_date VARCHAR(10),
+  schedule_date VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -77,13 +71,13 @@ CREATE TABLE tr_schedule_course (
 -- tr_cart_product
 CREATE TABLE tr_cart_product (
   cart_product_id INT AUTO_INCREMENT PRIMARY KEY,
-  cart_id INT NOT NULL,
+  user_id INT NOT NULL,
   course_id INT NOT NULL,
   schedule_course_id INT,
   course_price INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (cart_id) REFERENCES ms_cart(cart_id),
+  FOREIGN KEY (user_id) REFERENCES ms_user(user_id),
   FOREIGN KEY (course_id) REFERENCES ms_courses(course_id),
   FOREIGN KEY (schedule_course_id) REFERENCES tr_schedule_course(schedule_course_id)
 );
@@ -117,6 +111,9 @@ CREATE TABLE tr_invoice_detail (
   FOREIGN KEY (invoice_id) REFERENCES tr_invoice(invoice_id),
   FOREIGN KEY (cart_product_id) REFERENCES tr_cart_product(cart_product_id)
 );
+
+ALTER TABLE tr_invoice ADD COLUMN invoice_number VARCHAR(50) UNIQUE AFTER invoice_id;
+
 
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
