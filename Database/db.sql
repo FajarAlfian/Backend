@@ -58,7 +58,7 @@ CREATE TABLE ms_courses (
 -- ms_schedule
 CREATE TABLE ms_schedule (
   schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-  schedule_date DATETIME,
+  schedule_date VARCHAR(10),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
