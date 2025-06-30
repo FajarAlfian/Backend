@@ -51,6 +51,24 @@ namespace DlanguageApi.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("category/{id}")]
+        public async Task<ActionResult<Course>> GetCourseByCategoryId(int id)
+        {
+            try
+            {
+                var course = await _coursesRepository.GetCourseByCategoryIdAsync(id);
+                if (course == null)
+                    return NotFound(ApiResult<object>.Error($"Kursus dengan category ID {id} tidak ditemukan", 404));
+                return Ok(ApiResult<Course>.SuccessResult(course, "Kursus berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil kursus dengan category ID {course_id}", id);
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
+
         [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Course>> CreateCourse([FromBody] Course course)
