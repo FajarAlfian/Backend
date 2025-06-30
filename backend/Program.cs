@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DlanguageApi.Data;
+using backend.Services;
+using DlanguageApi.Configuration;
+using DlanguageApi.Models;
+
+using System.Security.Cryptography; 
 
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
@@ -58,6 +63,8 @@ builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 builder.Services.AddScoped<IScheduleCourseRepository, ScheduleCourseRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add authentication services
 builder.Services.AddAuthentication(options =>
