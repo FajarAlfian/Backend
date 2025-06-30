@@ -55,14 +55,17 @@ namespace DlanguageApi.Controllers
             }   
         }   
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice([FromBody] InvoiceCreateRequest request)
+        public async Task<ActionResult<Invoice>> CreateInvoice(
+            [FromQuery] int user_id,
+            [FromQuery] int payment_method_id,
+            [FromQuery] string payment_method_name)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
             try
             {
-                var cartItems = await _checkoutRepository.GetUserCheckoutAsync(request.user_id);
+                var cartItems = await _checkoutRepository.GetUserCheckoutAsync(user_id);
                 if (cartItems.Count == 0)
                     return BadRequest(ApiResult<object>.Error("Cart kosong, tidak bisa membuat invoice.", 400));
 
@@ -74,10 +77,10 @@ namespace DlanguageApi.Controllers
                 var invoice = new Invoice
                 {
                     invoice_number = newInvoiceNumber,
-                    user_id = request.user_id,
+                    user_id = user_id,
                     total_price = totalPrice,
-                    payment_method_id = request.payment_method_id,
-                    payment_method_name = request.payment_method_name,
+                    payment_method_id = payment_method_id,
+                    payment_method_name = payment_method_name,
                     isPaid = false,
                     created_at = DateTime.UtcNow,
                     updated_at = DateTime.UtcNow
@@ -95,7 +98,7 @@ namespace DlanguageApi.Controllers
                     );
                 }
 
-                //await _checkoutRepository.ClearUserCartAsync(request.user_id);
+                //await _checkoutRepository.ClearUserCartAsync(user_id);
 
                 return CreatedAtAction(nameof(GetInvoice), new { id = invoice_id }, ApiResult<Invoice>.SuccessResult(invoice, "Invoice berhasil dibuat", 201));
             }
