@@ -17,10 +17,13 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100)]
         public string password { get; set; } = string.Empty;
+
+        public string? password_reset_token { get; set; }
+        public DateTime? PasswordResetTokenCreatedAt { get; set; }
         public string role { get; set; } = "member";
- 
-        public DateTime created_at { get; set; } = DateTime.UtcNow; 
-        public DateTime updated_at { get; set; } = DateTime.UtcNow; 
+
+        public DateTime created_at { get; set; } = DateTime.UtcNow;
+        public DateTime updated_at { get; set; } = DateTime.UtcNow;
     }
 
 
@@ -57,5 +60,28 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100, MinimumLength = 6)]
         public string Password { get; set; } = string.Empty;
+    }
+
+ // DTO untuk Forgot Password Request
+    public class ForgotPasswordRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    // DTO untuk Reset Password Request
+    public class ResetPasswordRequest
+    {
+        [Required]
+        public string Token { get; set; } = string.Empty;
+        
+        [Required]
+        [MinLength(6)]
+        public string NewPassword { get; set; } = string.Empty;
+        
+        [Required]
+        [Compare("NewPassword", ErrorMessage = "Password dan konfirmasi password tidak sama")]
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }
