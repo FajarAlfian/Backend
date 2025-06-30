@@ -9,8 +9,8 @@ namespace DlanguageApi.Data
         Task AddToCheckoutAsync(Checkout checkout);
         Task<List<Checkout>> GetUserCheckoutAsync(int userId);
         Task<decimal> GetTotalPriceAsync(int userId);
-        Task<bool> IsCourseInCheckoutAsync(int userId, int courseId);
-        Task<bool> RemoveFromCheckoutAsync(int userId, int courseId);
+        Task<bool> IsScheduleCourseInCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
+        Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
         Task ClearUserCartAsync(int userId);
     }
 
@@ -101,32 +101,32 @@ namespace DlanguageApi.Data
             return total;
         }
 
-        public async Task<bool> IsCourseInCheckoutAsync(int userId, int courseId)
+        public async Task<bool> IsScheduleCourseInCheckoutAsync(int userId, int scheduleCourseId)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                string query = "SELECT COUNT(*) FROM tr_cart_product WHERE user_id = @user_id AND course_id = @course_id";
+                string query = "SELECT COUNT(*) FROM tr_cart_product WHERE user_id = @user_id AND schedule_course_id = @schedule_course_id";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", userId);
-                    command.Parameters.AddWithValue("@course_id", courseId);
+                    command.Parameters.AddWithValue("@schedule_course_id", scheduleCourseId);
                     var count = Convert.ToInt32(await command.ExecuteScalarAsync());
                     return count > 0;
                 }
             }
         }
 
-        public async Task<bool> RemoveFromCheckoutAsync(int userId, int courseId)
+        public async Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                string query = "DELETE FROM tr_cart_product WHERE user_id = @user_id AND course_id = @course_id";
+                string query = "DELETE FROM tr_cart_product WHERE user_id = @user_id AND schedule_course_id = @schedule_course_id";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", userId);
-                    command.Parameters.AddWithValue("@course_id", courseId);
+                    command.Parameters.AddWithValue("@schedule_course_id", scheduleCourseId);
                     int affectedRows = await command.ExecuteNonQueryAsync();
                     return affectedRows > 0;
                 }

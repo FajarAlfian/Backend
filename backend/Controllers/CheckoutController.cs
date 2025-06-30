@@ -19,24 +19,30 @@ public class CheckoutController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> AddToCheckout([FromQuery] int courseId, [FromQuery] int scheduleCourseId)
+    public async Task<IActionResult> AddToCheckout([FromQuery] int scheduleCourseId)
     {
         try
         {
-            // Ambil userId dari token
             var userIdClaim = User.FindFirst("userId");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
             }
 
-            var course = await _coursesRepository.GetCourseByIdAsync(courseId);
-            if (course == null)
-                return NotFound(ApiResult<object>.Error("Course not found", 404));
+            // Ambil data schedule_course
+            var scheduleCourseRepo = HttpContext.RequestServices.GetService(typeof(IScheduleCourseRepository)) as IScheduleCourseRepository;
+            var scheduleCourse = await scheduleCourseRepo.GetScheduleCourseByIdAsync(scheduleCourseId);
+            if (scheduleCourse == null)
+                return NotFound(ApiResult<object>.Error("Schedule course tidak ditemukan", 404));
 
-                
-            if (await _checkoutRepository.IsCourseInCheckoutAsync(userId, courseId))
-                return BadRequest(ApiResult<object>.Error("Course sudah ada di checkout", 400));
+            // Ambil data course
+            var course = await _coursesRepository.GetCourseByIdAsync(scheduleCourse.course_id);
+            if (course == null)
+                return NotFound(ApiResult<object>.Error("Course tidak ditemukan", 404));
+
+            // Cek apakah sudah ada di checkout (berdasarkan schedule_course_id)
+            if (await _checkoutRepository.IsScheduleCourseInCheckoutAsync(userId, scheduleCourseId))
+                return BadRequest(ApiResult<object>.Error("Schedule course sudah ada di checkout", 400));
 
             var checkout = new Checkout
             {
@@ -50,7 +56,7 @@ public class CheckoutController : ControllerBase
             };
 
             await _checkoutRepository.AddToCheckoutAsync(checkout);
-            return Ok(ApiResult<object>.SuccessResult(checkout, "Course added to checkout", 200));
+            return Ok(ApiResult<object>.SuccessResult(checkout, "Schedule course added to checkout", 200));
         }
         catch (Exception ex)
         {
@@ -83,22 +89,21 @@ public class CheckoutController : ControllerBase
         }
     }
 
-    [HttpDelete("remove/{courseId}")]
-    public async Task<IActionResult> RemoveFromCheckout(int courseId)
+    [HttpDelete("remove/{scheduleCourseId}")]
+    public async Task<IActionResult> RemoveFromCheckout(int scheduleCourseId)
     {
         try
         {
-            // Ambil userId dari token
             var userIdClaim = User.FindFirst("userId");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
             }
 
-            var removed = await _checkoutRepository.RemoveFromCheckoutAsync(userId, courseId);
+            var removed = await _checkoutRepository.RemoveFromCheckoutAsync(userId, scheduleCourseId);
             if (!removed)
-                return NotFound(ApiResult<object>.Error("Course tidak ditemukan di checkout user", 404));
-            return Ok(ApiResult<object>.SuccessResult("Course berhasil dihapus dari checkout", 200));
+                return NotFound(ApiResult<object>.Error("Schedule course tidak ditemukan di checkout user", 404));
+            return Ok(ApiResult<object>.SuccessResult("Schedule course berhasil dihapus dari checkout", 200));
         }
         catch (Exception ex)
         {
