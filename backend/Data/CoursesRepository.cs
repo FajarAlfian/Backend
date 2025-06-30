@@ -68,8 +68,8 @@ namespace DlanguageApi.Data
                     SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, cat.category_name, c.created_at, c.updated_at
                     FROM ms_courses c
                     LEFT JOIN ms_category cat ON c.category_id = cat.category_id
-                    WHERE c.category_id = @category_id
-                    order by c.course_id";
+                    WHERE c.course_id = @course_id
+                    ORDER BY c.course_id";
 
                 using (var command = new MySqlCommand(queryString, connection))
                 {

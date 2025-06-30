@@ -8,7 +8,7 @@ namespace DlanguageApi.Data
     {
         Task<List<ScheduleCourse>> GetAllScheduleCourseAsync();
         Task<ScheduleCourse?> GetScheduleCourseByIdAsync(int id);
-        Task<List<ScheduleCourse>>  GetScheduleCourseByCourseIdAsync(int id);
+        Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int id);
         Task<int> CreateScheduleCourseAsync(ScheduleCourse ScheduleCourse);
         Task<bool> UpdateScheduleCourseAsync(ScheduleCourse ScheduleCourse);
         Task<bool> DeleteScheduleCourseAsync(int id);
@@ -32,8 +32,9 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT schedule_course_id, course_id, schedule_id, created_at, updated_at
-                    FROM tr_schedule_course";
+                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
+                    FROM tr_schedule_course s
+                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -44,6 +45,7 @@ namespace DlanguageApi.Data
                             schedule_course_id = reader.GetInt32("schedule_course_id"),
                             course_id = reader.GetInt32("course_id"),
                             schedule_id = reader.GetInt32("schedule_id"),
+                            schedule_date = reader.GetString("schedule_date"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
@@ -60,8 +62,9 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT schedule_course_id, course_id, schedule_id, created_at, updated_at
-                    FROM tr_schedule_course
+                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
+                    FROM tr_schedule_course s
+                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id
                     WHERE schedule_course_id = @schedule_course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -75,6 +78,7 @@ namespace DlanguageApi.Data
                                 schedule_course_id = reader.GetInt32("schedule_course_id"),
                                 course_id = reader.GetInt32("course_id"),
                                 schedule_id = reader.GetInt32("schedule_id"),
+                                schedule_date = reader.GetString("schedule_date"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
@@ -86,15 +90,16 @@ namespace DlanguageApi.Data
         }
 
         // Read schedule by course_id
-        public async Task<List<ScheduleCourse?>> GetScheduleCourseByCourseIdAsync(int id)
+        public async Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int id)
         {
             var scheduleCourse = new List<ScheduleCourse>();
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT schedule_course_id, course_id, schedule_id, created_at, updated_at
-                    FROM tr_schedule_course
+                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
+                    FROM tr_schedule_course s
+                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -108,6 +113,7 @@ namespace DlanguageApi.Data
                                 schedule_course_id = reader.GetInt32("schedule_course_id"),
                                 course_id = reader.GetInt32("course_id"),
                                 schedule_id = reader.GetInt32("schedule_id"),
+                                schedule_date = reader.GetString("schedule_date"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             });
