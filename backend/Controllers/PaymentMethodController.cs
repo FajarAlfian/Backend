@@ -50,7 +50,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<PaymentMethod>> CreatePaymentMethod([FromBody] PaymentMethodRequest request)
         {
@@ -73,7 +74,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePaymentMethod(int id, [FromBody] PaymentMethodRequest request)
         {
@@ -102,7 +104,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePaymentMethod(int id)
         {

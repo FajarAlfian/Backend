@@ -18,9 +18,8 @@ namespace DlanguageApi.Controllers
             _coursesRepository = coursesRepository;
             _logger = logger;
         }
-
-        [HttpGet]
         [AllowAnonymous]
+        [HttpGet]
         public async Task<ActionResult<List<Course>>> GetCourses()
         {
             try
@@ -34,9 +33,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
-        [HttpGet("{id}")]
         [AllowAnonymous]
+        [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
             try
@@ -53,6 +51,7 @@ namespace DlanguageApi.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Course>> CreateCourse([FromBody] Course course)
         {
@@ -72,6 +71,8 @@ namespace DlanguageApi.Controllers
             }
         }
 
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] Course course)
         {
@@ -99,7 +100,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {

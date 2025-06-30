@@ -19,6 +19,7 @@ namespace DlanguageApi.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUsers()
         {
@@ -33,7 +34,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
@@ -50,7 +51,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser([FromBody] User user)
         {

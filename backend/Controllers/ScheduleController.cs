@@ -18,7 +18,8 @@ namespace DlanguageApi.Controllers
             _scheduleRepository = scheduleRepository;
             _logger = logger;
         }
-
+        
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<List<Schedule>>> GetSchedule()
         {
@@ -33,7 +34,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
@@ -50,7 +51,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Schedule>> CreateSchedule([FromBody] ScheduleRequest request)
         {
@@ -73,7 +75,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleRequest request)
         {
@@ -102,7 +105,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSchedule(int id)
         {

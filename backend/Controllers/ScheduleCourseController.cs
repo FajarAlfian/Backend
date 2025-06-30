@@ -19,6 +19,7 @@ namespace DlanguageApi.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<List<ScheduleCourse>>> GetScheduleCourse()
         {
@@ -33,7 +34,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<ScheduleCourse>> GetScheduleCourse(int id)
         {
@@ -50,7 +51,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("course/{id}")]
         public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
         {
@@ -68,7 +69,8 @@ namespace DlanguageApi.Controllers
             }
             
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<ScheduleCourse>> CreateScheduleCourse([FromBody] ScheduleCourseRequest request)
         {
@@ -92,7 +94,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateScheduleCourse(int id, [FromBody] ScheduleCourseRequest request)
         {
@@ -122,7 +125,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteScheduleCourse(int id)
         {
