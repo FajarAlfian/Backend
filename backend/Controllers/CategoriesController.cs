@@ -52,6 +52,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
+        [AllowAnonymous]
         [HttpGet("category/{nama}")]
         public async Task<ActionResult<Category>> GetCategoryByName(string nama)
         {
@@ -68,7 +69,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryRequest request)
         {
@@ -93,7 +94,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryRequest request)
         {
@@ -126,7 +128,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {

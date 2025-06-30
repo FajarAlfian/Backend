@@ -19,8 +19,9 @@ namespace DlanguageApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
         [AllowAnonymous]
+        [HttpGet]
+        
         public async Task<ActionResult<List<ScheduleCourse>>> GetScheduleCourse()
         {
             try
@@ -34,9 +35,9 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
-        [HttpGet("{id}")]
         [AllowAnonymous]
+        [HttpGet("{id}")]
+     
         public async Task<ActionResult<ScheduleCourse>> GetScheduleCourse(int id)
         {
             try
@@ -52,10 +53,9 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
-        [HttpGet("course/{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
+        [HttpGet("course/{id}")]
+             public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
         {
             try
             {
@@ -71,7 +71,8 @@ namespace DlanguageApi.Controllers
             }
 
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<ScheduleCourse>> CreateScheduleCourse([FromBody] ScheduleCourseRequest request)
         {
@@ -95,7 +96,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateScheduleCourse(int id, [FromBody] ScheduleCourseRequest request)
         {
@@ -125,7 +127,8 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteScheduleCourse(int id)
         {
