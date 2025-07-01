@@ -121,6 +121,11 @@ ADD CONSTRAINT fk_invoice_detail_cart_product
 FOREIGN KEY (cart_product_id) REFERENCES tr_cart_product(cart_product_id)
 ON DELETE SET NULL;
 
+-- Add PasswordResetToken and PasswordResetTokenCreatedAt to ms_user
+ALTER TABLE ms_user
+ADD COLUMN PasswordResetToken VARCHAR(255) NULL AFTER password,
+ADD COLUMN PasswordResetTokenCreatedAt DATETIME NULL AFTER PasswordResetToken;
+
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
 ('Arabic', "https://flagcdn.com/w320/sa.png", 'Kursus Bahasa Arab dirancang untuk membekali peserta dengan kemampuan membaca, menulis, mendengarkan, dan berbicara dalam bahasa Arab secara efektif. Bahasa Arab merupakan salah satu bahasa resmi dunia dan digunakan secara luas di Timur Tengah, Afrika Utara, serta negara-negara Islam. Kursus ini membahas mulai dari dasar huruf dan angka Arab, tata bahasa (nahwu dan sharaf), percakapan sehari-hari, hingga pemahaman teks Al-Quran dan literatur Arab modern. Dengan metode pembelajaran interaktif, siswa diajak untuk praktik dialog, mendengarkan native speaker, serta memahami kebudayaan Arab yang kaya. Kursus ini sangat cocok bagi pemula, pelajar, maupun profesional yang ingin meningkatkan kompetensi komunikasi atau persiapan studi dan bisnis di negara-negara Arab.', NOW(), NOW()),
