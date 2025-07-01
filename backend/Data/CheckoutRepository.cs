@@ -63,7 +63,7 @@ namespace DlanguageApi.Data
                     JOIN ms_category cat ON c.category_id = cat.category_id
                     JOIN tr_schedule_course tsc ON  cp.schedule_course_id = tsc.schedule_course_id
                     JOIN ms_schedule sch ON tsc.schedule_id = sch.schedule_id
-                    WHERE cp.user_id = 1";
+                    WHERE cp.user_id = @user_id";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", userId);
