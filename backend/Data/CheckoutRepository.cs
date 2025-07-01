@@ -7,7 +7,7 @@ namespace DlanguageApi.Data
     public interface ICheckoutRepository
     {
         Task AddToCheckoutAsync(Checkout checkout);
-        Task<List<Checkout>> GetUserCheckoutAsync(int userId);
+        Task<List<GetCheckout>> GetUserCheckoutAsync(int userId);
         Task<decimal> GetTotalPriceAsync(int userId);
         Task<bool> IsScheduleCourseInCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
         Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
@@ -48,17 +48,22 @@ namespace DlanguageApi.Data
             }
         }
 
-        public async Task<List<Checkout>> GetUserCheckoutAsync(int userId)
+        public async Task<List<GetCheckout>> GetUserCheckoutAsync(int userId)
         {
-            var checkouts = new List<Checkout>();
+            var checkouts = new List<GetCheckout>();
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string query = @"
-                    SELECT cp.cart_product_id, cp.course_id, c.course_name, cp.course_price, cp.user_id, cp.created_at, cp.updated_at
+                    SELECT cp.cart_product_id, cp.course_id, c.course_image, c.course_name, 
+                    cat.category_name, sch.schedule_date, c.course_price,
+                    cp.user_id, cp.created_at, cp.updated_at
                     FROM tr_cart_product cp
                     JOIN ms_courses c ON cp.course_id = c.course_id
-                    WHERE cp.user_id = @user_id";
+                    JOIN ms_category cat ON c.category_id = cat.category_id
+                    JOIN tr_schedule_course tsc ON  cp.schedule_course_id = tsc.schedule_course_id
+                    JOIN ms_schedule sch ON tsc.schedule_id = sch.schedule_id
+                    WHERE cp.user_id = 1";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", userId);
@@ -66,13 +71,16 @@ namespace DlanguageApi.Data
                     {
                         while (await reader.ReadAsync())
                         {
-                            checkouts.Add(new Checkout
+                            checkouts.Add(new GetCheckout
                             {
                                 cart_product_id = reader.GetInt32("cart_product_id"),
                                 course_id = reader.GetInt32("course_id"),
+                                course_image = reader.GetString("course_image"),
                                 course_name = reader.GetString("course_name"),
+                                category_name = reader.GetString("category_name"),
                                 course_price = reader.GetInt32("course_price"),
                                 user_id = reader.GetInt32("user_id"),
+                                schedule_date = reader.GetString("schedule_date"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             });
