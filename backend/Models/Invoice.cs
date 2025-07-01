@@ -6,15 +6,12 @@ namespace DlanguageApi.Models
     {   
         public int invoice_id { get; set; }
         public string invoice_number { get; set; } = string.Empty;
-        
-        public string invoice_date { get; set; } = string.Empty;
 
         public int user_id { get; set; }
 
         public double total_price { get; set; }
         public int payment_method_id { get; set; }
         public string payment_method_name { get; set; } = string.Empty;
-        public string category_name { get; set; } = string.Empty;
         public int total_courses { get; set; } = 0;
 
         public bool isPaid { get; set; } = false;

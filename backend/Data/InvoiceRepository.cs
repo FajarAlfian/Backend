@@ -14,6 +14,7 @@ namespace DlanguageApi.Data
         Task<double> GetTotalPriceAsync(int userId);
         Task CreateInvoiceDetailAsync(int invoiceId, int cartProductId, int courseId, double subTotalPrice);
         Task<int> GetLastInvoiceNumberAsync();
+        Task<string> GetPaymentMethodNameByIdAsync(int payment_method_id);
     }
 
     public class InvoiceRepository : IInvoiceRepository
@@ -266,6 +267,21 @@ namespace DlanguageApi.Data
                         }
                     }
                     return 0;
+                }
+            }
+        }
+
+        public async Task<string> GetPaymentMethodNameByIdAsync(int payment_method_id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = "SELECT payment_method_name FROM ms_payment_method WHERE payment_method_id = @id LIMIT 1";
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", payment_method_id);
+                    var result = await command.ExecuteScalarAsync();
+                    return result?.ToString() ?? "";
                 }
             }
         }

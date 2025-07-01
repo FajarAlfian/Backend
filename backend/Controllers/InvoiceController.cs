@@ -20,19 +20,24 @@ namespace DlanguageApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<ActionResult<List<Invoice>>> GetInvoicesByUserId(int userId)
+        [HttpGet("user")]
+        public async Task<ActionResult<List<Invoice>>> GetInvoicesByUserId()
         {
             try
             {
+                var userIdClaim = User.FindFirst("userId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
+                }
                 var invoices = await _invoiceRepository.GetInvoiceByUserIdAsync(userId);
-                if (invoices == null)
-                return NotFound(ApiResult<object>.Error($"Tidak ada invoice ditemukan untuk user dengan ID {userId}", 404));
+                if (invoices == null || invoices.Count == 0)
+                    return NotFound(ApiResult<object>.Error($"Tidak ada invoice ditemukan untuk user dengan ID {userId}", 404));
                 return Ok(ApiResult<List<Invoice>>.SuccessResult(invoices, "Invoice berhasil diambil", 200));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saat mengambil invoice untuk user dengan ID {user_id}", userId);
+                _logger.LogError(ex, "Error saat mengambil invoice untuk user dengan ID {user_id}", "me");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
@@ -55,17 +60,21 @@ namespace DlanguageApi.Controllers
             }   
         }   
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice(
-            [FromQuery] int user_id,
-            [FromQuery] int payment_method_id,
-            [FromQuery] string payment_method_name)
+        public async Task<ActionResult<Invoice>> CreateInvoice([FromQuery] int payment_method_id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
             try
             {
-                var cartItems = await _checkoutRepository.GetUserCheckoutAsync(user_id);
+                // Ambil user_id dari JWT claims
+                var userIdClaim = User.FindFirst("userId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
+                }
+
+                var cartItems = await _checkoutRepository.GetUserCheckoutAsync(userId);
                 if (cartItems.Count == 0)
                     return BadRequest(ApiResult<object>.Error("Cart kosong, tidak bisa membuat invoice.", 400));
 
@@ -74,10 +83,12 @@ namespace DlanguageApi.Controllers
                 int lastNumber = await _invoiceRepository.GetLastInvoiceNumberAsync();
                 string newInvoiceNumber = $"DLA{(lastNumber + 1).ToString("D5")}";
 
+                string payment_method_name = await _invoiceRepository.GetPaymentMethodNameByIdAsync(payment_method_id);
+
                 var invoice = new Invoice
                 {
                     invoice_number = newInvoiceNumber,
-                    user_id = user_id,
+                    user_id = userId,
                     total_price = totalPrice,
                     payment_method_id = payment_method_id,
                     payment_method_name = payment_method_name,
@@ -91,14 +102,14 @@ namespace DlanguageApi.Controllers
                 foreach (var item in cartItems)
                 {
                     await _invoiceRepository.CreateInvoiceDetailAsync(
-                        invoice_id,          
-                        item.cart_product_id,   
-                        item.course_id,          
-                        item.course_price        
+                        invoice_id,
+                        item.cart_product_id,
+                        item.course_id,
+                        item.course_price
                     );
                 }
 
-                //await _checkoutRepository.ClearUserCartAsync(user_id);
+                //await _checkoutRepository.ClearUserCartAsync(userId);
 
                 return CreatedAtAction(nameof(GetInvoice), new { id = invoice_id }, ApiResult<Invoice>.SuccessResult(invoice, "Invoice berhasil dibuat", 201));
             }
@@ -108,7 +119,6 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
 
                     
         [HttpPut("{id}")]
