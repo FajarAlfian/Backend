@@ -8,6 +8,7 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100)]
         public string payment_method_name { get; set; } = string.Empty;
+        public string payment_method_logo { get; set; } = string.Empty;
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
     }

@@ -83,6 +83,7 @@ CREATE TABLE tr_cart_product (
 CREATE TABLE ms_payment_method (
   payment_method_id INT AUTO_INCREMENT PRIMARY KEY,
   payment_method_name VARCHAR(255) NOT NULL,
+  payment_method_logo VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -132,8 +133,6 @@ INSERT INTO ms_category (category_name, category_image, category_description, cr
 ('Mandarin', "https://flagcdn.com/w320/cn.png", 'Kursus Bahasa Mandarin berfokus pada penguasaan keterampilan dasar seperti mendengarkan, berbicara, membaca, dan menulis karakter Hanzi. Bahasa Mandarin merupakan bahasa dengan penutur terbanyak di dunia dan menjadi kunci komunikasi di Tiongkok dan komunitas internasional. Peserta akan belajar fonetik (pinyin), kosakata, tata bahasa, serta penggunaan bahasa dalam percakapan sehari-hari dan situasi bisnis. Dengan pendekatan interaktif, kursus ini juga mengenalkan budaya dan kebiasaan masyarakat Tiongkok. Kursus sangat bermanfaat bagi pelajar, pekerja, maupun pelaku bisnis yang ingin memperluas jejaring dan peluang di negara-negara berbahasa Mandarin.', NOW(), NOW()),
 ('Melayu', "https://flagcdn.com/w320/my.png", 'Kursus Bahasa Melayu bertujuan untuk memberikan pemahaman mendalam tentang bahasa dan budaya Melayu yang digunakan di Indonesia, Malaysia, Brunei, dan Singapura. Materi kursus meliputi tata bahasa, kosakata, pengucapan, serta latihan membaca dan berbicara. Peserta juga akan memahami perbedaan dialek dan penggunaan bahasa Melayu dalam berbagai situasi sosial dan profesional. Kursus ini sangat cocok untuk pelajar, pekerja, maupun siapa saja yang ingin memperluas kemampuan komunikasi di kawasan Asia Tenggara. Selain itu, kursus ini juga membahas sejarah dan tradisi Melayu, sehingga peserta dapat lebih mengenal identitas dan kearifan lokal budaya Melayu.', NOW(), NOW());
 
-
-
 -- Insert data into ms_courses
 INSERT INTO ms_courses (course_name, course_price, course_image, course_description, category_id)
 VALUES
@@ -156,3 +155,10 @@ VALUES
 'Germany Language for Junior adalah kursus bahasa Jerman yang dirancang khusus untuk anak-anak dan remaja. Program ini mengajarkan dasar-dasar bahasa Jerman, seperti kosa kata sehari-hari, pengucapan, serta tata bahasa yang mudah dipahami. Melalui aktivitas interaktif dan latihan berbicara, siswa akan mampu berkomunikasi secara sederhana dalam bahasa Jerman. Kursus ini juga membekali peserta dengan pengetahuan budaya Jerman, permainan edukatif, dan pembelajaran visual yang menarik. Sangat cocok bagi anak-anak yang ingin mengenal bahasa asing baru dan membangun fondasi yang kuat untuk jenjang pendidikan berikutnya.',
 2);
 
+INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES 
+("Gopay","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/gopay_qyfauu.png"),
+("OVO","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/ovo_qbpieq.jpg"),
+("Dana","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/dana_rfzti7.jpg"),
+("Mandiri","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/mandiri_h8bdrl.png"),
+("BCA","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/bca_mrhl0t.svg"),
+("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png")
