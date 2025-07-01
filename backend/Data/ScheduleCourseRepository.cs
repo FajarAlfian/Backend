@@ -34,7 +34,7 @@ namespace DlanguageApi.Data
                 string queryString = @"
                     SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
                     FROM tr_schedule_course s
-                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id";
+                    INNER JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -64,7 +64,7 @@ namespace DlanguageApi.Data
                 string queryString = @"
                     SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
                     FROM tr_schedule_course s
-                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id
+                    LEFT JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id
                     WHERE schedule_course_id = @schedule_course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -99,7 +99,7 @@ namespace DlanguageApi.Data
                 string queryString = @"
                     SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
                     FROM tr_schedule_course s
-                    LEFT JOIN ms_schedule sch ON s.schedule_course_id = sch.schedule_id
+                    LEFT JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
