@@ -49,6 +49,15 @@ namespace DlanguageApi.Controllers
                     return Conflict(ApiResult<object>.Error("Email sudah terdaftar", 409));
                 }
 
+                //send email
+                bool emailSent = await _emailService.SendVerificationEmailAsync(request.Email, request.Username);
+                if (!emailSent)
+                {
+                    _logger.LogError("Failed to send verification email to {Email}", request.Email);
+                    return StatusCode(500, ApiResult<object>.Error("Gagal mengirim email verifikasi", 500));
+                }
+
+
                 // Hash password
                 string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -64,13 +73,15 @@ namespace DlanguageApi.Controllers
                 var userId = await _userRepository.CreateUserAsync(newUser);
                 newUser.user_id = userId;
 
-                return Ok(ApiResult<object>.SuccessResult(new { userId = newUser.user_id, username = newUser.username, email = newUser.email, role = newUser.role }, "Registrasi berhasil", 201));
+                return Ok(ApiResult<object>.SuccessResult(new { userId = newUser.user_id, username = newUser.username, email = newUser.email, role = newUser.role }, "Registrasi berhasil, Silahkan cek email", 201));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during user registration.");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
+
+           
         }
 
         [HttpPost("login")]

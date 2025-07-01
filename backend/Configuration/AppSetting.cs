@@ -56,12 +56,12 @@ namespace DlanguageApi.Configuration
         /// <summary>
         /// Base URL aplikasi backend API
         /// </summary>
-        public string BackendBaseUrl { get; set; } = "http://localhost:5085";
+        public string BackendBaseUrl { get; set; } = "http://localhost:5009";
 
         /// <summary>
         /// Nama aplikasi untuk branding di email
         /// </summary>
-        public string AppName { get; set; } = "ProductAPI";
+        public string AppName { get; set; } = "Dlanguage";
     }
 
     /// <summary>
