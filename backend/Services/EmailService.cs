@@ -86,7 +86,7 @@ namespace backend.Services
             }
         }
 
-          public async Task<bool> SendVerificationEmailAsync(string to, string userName)
+          public async Task<bool> SendVerificationEmailAsync(string to, string userName, string verificationToken)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace backend.Services
                 
                 // Base URL untuk verification link (bisa dari frontend atau backend)
                 var baseUrl = _appSettings.FrontendBaseUrl;
-                var loginLink = $"{baseUrl}/login";
+                var verificationLink = $"{baseUrl}/login";
                 
                 // HTML template yang professional dan menarik
                 var htmlBody = $@"
@@ -132,7 +132,7 @@ namespace backend.Services
                             <div class='verification-box'>
                                 <h3>✅ Silahkan Login ke {_appSettings.AppName}</h3>
                                 <p>Klik tombol ini untuk ke halaman Login:</p>
-                                <a href='{loginLink}' class='btn'>Login</a>
+                                <a href='{verificationLink}' class='btn'>Login</a>
                             </div>
                             
                             <div class='security-note'>
@@ -144,9 +144,17 @@ namespace backend.Services
                                 </ul>
                             </div>
                             
-                            <p><strong>Alternatif:</strong> Jika tombol di atas tidak berfungsi, copy dan paste link berikut di browser Anda: {loginLink}</p>
+                            <p><strong>Alternatif:</strong> Jika tombol di atas tidak berfungsi, copy dan paste link berikut di browser Anda: {verificationLink}</p>
 
                         </div>
+                            <div class='token-info'>
+                                {verificationLink}
+                            </div>
+                            
+                            <p><strong>Verification Token:</strong></p>
+                            <div class='token-info'>
+                                {verificationToken}
+                            </div>
                         
                         <div class='footer'>
                             <p>Email ini dikirim secara otomatis oleh sistem {_appSettings.AppName}.</p>

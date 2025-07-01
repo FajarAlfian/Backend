@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace DlanguageApi.Models
 {
@@ -21,6 +22,14 @@ namespace DlanguageApi.Models
         public string? password_reset_token { get; set; }
         public DateTime? PasswordResetTokenCreatedAt { get; set; }
         public string role { get; set; } = "member";
+
+        public bool is_verified { get; set; } = false;
+        
+        public string? email_verification_token { get; set; }
+        
+        public DateTime? email_token_created_at { get; set; }
+        public string? token { get; set; }
+
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
@@ -45,6 +54,15 @@ namespace DlanguageApi.Models
         [Required]
         public string Password { get; set; } = string.Empty;
     }
+    public class LoginResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        public UserLoginInfo? User { get; set; }
+        public string? Token { get; set; }
+    }
+
 
     public class RegisterRequest
     {
@@ -62,7 +80,7 @@ namespace DlanguageApi.Models
         public string Password { get; set; } = string.Empty;
     }
 
- // DTO untuk Forgot Password Request
+    // DTO untuk Forgot Password Request
     public class ForgotPasswordRequest
     {
         [Required]
@@ -75,13 +93,27 @@ namespace DlanguageApi.Models
     {
         [Required]
         public string Token { get; set; } = string.Empty;
-        
+
         [Required]
         [MinLength(6)]
         public string NewPassword { get; set; } = string.Empty;
-        
+
         [Required]
         [Compare("NewPassword", ErrorMessage = "Password dan konfirmasi password tidak sama")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
+        public class VerificationStatusResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public bool IsVerified { get; set; }
+        public string Email { get; set; } = string.Empty;
+    }
+        public class ResendVerificationRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
+
 }
