@@ -64,8 +64,8 @@ public class CheckoutController : ControllerBase
                 $"Terjadi kesalahan server: {ex.Message}", 500));
         }
     }
-
-    [HttpGet("user/{userId}")]
+    
+    [HttpGet("user")]
     public async Task<IActionResult> GetUserCheckout()
     { 
         try
