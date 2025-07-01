@@ -19,6 +19,7 @@ namespace DlanguageApi.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<List<PaymentMethod>>> GetPaymentMethod()
         {
@@ -33,7 +34,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<PaymentMethod>> GetPaymentMethod(int id)
         {
