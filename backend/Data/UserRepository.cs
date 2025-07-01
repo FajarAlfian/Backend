@@ -11,7 +11,10 @@ namespace DlanguageApi.Data
         Task<int> CreateUserAsync(User user);
         Task<User?> GetUserByEmailAsync(string email);
         Task<bool> UpdateUserAsync(User user);
+        Task<bool> UpdatePasswordResetTokenAsync(int userId, string token);
+        Task<bool> UpdatePasswordAndClearResetTokenAsync(int userId, string hashedPassword);
         Task<bool> DeleteUserAsync(int id);
+        Task<User?> GetUserByResetTokenAsync(string token);
     }
     public class UserRepository : IUserRepository
     {
@@ -46,8 +49,8 @@ namespace DlanguageApi.Data
                             email = reader.GetString("email"),
                             password = reader.GetString("password"),
                             role = reader.GetString("role"),
-                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
+                            created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
                     }
                 }
@@ -78,8 +81,8 @@ namespace DlanguageApi.Data
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
                                 role = reader.GetString("role"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             };
                         }
                     }
@@ -112,8 +115,8 @@ namespace DlanguageApi.Data
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
                                 role = reader.GetString("role"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             };
                         }
                     }
@@ -137,8 +140,8 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
                     command.Parameters.AddWithValue("@role", user.role);
-                    command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime()); 
-                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
+                    command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime());
+                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime());
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
@@ -165,7 +168,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
                     command.Parameters.AddWithValue("@role", user.role);
-                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime()); 
+                    command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime());
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
                 }
@@ -185,6 +188,82 @@ namespace DlanguageApi.Data
                     return rowsAffected > 0;
                 }
             }
+        }
+
+        // Update Password Reset Token
+        public async Task<bool> UpdatePasswordAndClearResetTokenAsync(int userId, string hashedPassword)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"UPDATE ms_user 
+                                SET password = @Password, 
+                                    PasswordResetToken = NULL, 
+                                    PasswordResetTokenCreatedAt = NULL 
+                                WHERE user_id = @UserId";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Password", hashedPassword);
+                    command.Parameters.AddWithValue("@UserId", userId);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<bool> UpdatePasswordResetTokenAsync(int userId, string token)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = @"UPDATE ms_user 
+                                 SET PasswordResetToken = @Token, 
+                                     PasswordResetTokenCreatedAt = @CreatedAt 
+                                 WHERE user_id = @UserId";
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Token", token);
+                    command.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<User?> GetUserByResetTokenAsync(string token)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = @"SELECT user_id, username, email, password, role, created_at, updated_at, PasswordResetTokenCreatedAt
+                                 FROM ms_user
+                                 WHERE PasswordResetToken = @Token";
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Token", token);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new User
+                            {
+                                user_id = reader.GetInt32("user_id"),
+                                username = reader.GetString("username"),
+                                email = reader.GetString("email"),
+                                password = reader.GetString("password"),
+                                role = reader.GetString("role"),
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime(),
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

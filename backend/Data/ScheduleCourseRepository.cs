@@ -45,7 +45,7 @@ namespace DlanguageApi.Data
                             schedule_course_id = reader.GetInt32("schedule_course_id"),
                             course_id = reader.GetInt32("course_id"),
                             schedule_id = reader.GetInt32("schedule_id"),
-                            schedule_date = reader.GetString("schedule_date"),
+                            schedule_date = reader.IsDBNull(reader.GetOrdinal("schedule_date")) ? null : reader.GetString("schedule_date"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
@@ -113,7 +113,7 @@ namespace DlanguageApi.Data
                                 schedule_course_id = reader.GetInt32("schedule_course_id"),
                                 course_id = reader.GetInt32("course_id"),
                                 schedule_id = reader.GetInt32("schedule_id"),
-                                schedule_date = reader.GetString("schedule_date"),
+                                schedule_date = reader.IsDBNull(reader.GetOrdinal("schedule_date")) ? null : reader.GetString("schedule_date"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             });

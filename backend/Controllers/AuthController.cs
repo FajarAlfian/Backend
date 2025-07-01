@@ -5,7 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net; 
+using BCrypt.Net;
+using DlanguageApi.Configuration;
+using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DlanguageApi.Controllers
 {
@@ -16,12 +19,18 @@ namespace DlanguageApi.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthController> _logger;
+        private readonly IEmailService _emailService; 
 
-        public AuthController(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthController> logger)
+        public AuthController(
+            IUserRepository userRepository, 
+            IConfiguration configuration, 
+            ILogger<AuthController> logger,
+            IEmailService emailService) 
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _logger = logger;
+            _emailService = emailService; 
         }
 
         [HttpPost("register")]
@@ -118,6 +127,46 @@ namespace DlanguageApi.Controllers
                 _logger.LogError(ex, "Error during user login.");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
+        }
+
+        // Endpoint untuk request reset password
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
+
+            var user = await _userRepository.GetUserByEmailAsync(request.Email);
+            if (user == null)
+                return Ok(ApiResult<object>.SuccessResult(null, "Jika email terdaftar, link reset sudah dikirim", 200)); 
+
+            var resetToken = Guid.NewGuid().ToString();
+
+            await _userRepository.UpdatePasswordResetTokenAsync(user.user_id, resetToken);
+
+            await _emailService.SendPasswordResetEmailAsync(user.email, user.username, resetToken);
+
+            return Ok(ApiResult<object>.SuccessResult(null, "Jika email terdaftar, link reset sudah dikirim", 200));
+        }
+
+        // Endpoint untuk reset password
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
+
+    
+            var user = await _userRepository.GetUserByResetTokenAsync(request.Token);
+            if (user == null) return BadRequest(ApiResult<object>.Error("Token tidak valid atau sudah expired", 400));
+          
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.password = hashedPassword;
+            await _userRepository.UpdateUserAsync(user);
+
+            return Ok(ApiResult<object>.SuccessResult(null, "Password berhasil direset", 200));
         }
     }
 }
