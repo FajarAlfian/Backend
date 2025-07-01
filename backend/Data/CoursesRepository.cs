@@ -8,6 +8,7 @@ namespace DlanguageApi.Data
     {
         Task<List<Course>> GetAllCoursesAsync();
         Task<Course?> GetCourseByIdAsync(int id);
+        Task<Course?> GetCourseByCategoryIdAsync(int id);
         Task<int> CreateCourseAsync(Course course);
         Task<bool> UpdateCourseAsync(Course course);
         Task<bool> DeleteCourseAsync(int id);
@@ -57,6 +58,44 @@ namespace DlanguageApi.Data
             }
             return courses;
         }
+        
+        public async Task<Course?> GetCourseByCategoryIdAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string queryString = @"
+                    SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, cat.category_name, c.created_at, c.updated_at
+                    FROM ms_courses c
+                    LEFT JOIN ms_category cat ON c.category_id = cat.category_id
+                    WHERE cat.category_id = @category_id
+                    ORDER BY c.course_id";
+
+                using (var command = new MySqlCommand(queryString, connection))
+                {
+                    command.Parameters.AddWithValue("@category_id", id);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new Course
+                            {
+                                course_id = reader.GetInt32("course_id"),
+                                course_name = reader.GetString("course_name"),
+                                course_price = reader.GetInt32("course_price"),
+                                course_image = reader.GetString("course_image"),
+                                course_description = reader.GetString("course_description"),
+                                category_id = reader.GetInt32("category_id"),
+                                category_name = reader.IsDBNull(reader.GetOrdinal("category_name")) ? string.Empty : reader.GetString("category_name"),
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
         // Read by ID
         public async Task<Course?> GetCourseByIdAsync(int id)
@@ -87,8 +126,8 @@ namespace DlanguageApi.Data
                                 course_description = reader.GetString("course_description"),
                                 category_id = reader.GetInt32("category_id"),
                                 category_name = reader.IsDBNull(reader.GetOrdinal("category_name")) ? string.Empty : reader.GetString("category_name"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
+                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             };
                         }
                     }
