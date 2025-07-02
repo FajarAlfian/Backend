@@ -127,6 +127,12 @@ ALTER TABLE ms_user
 ADD COLUMN PasswordResetToken VARCHAR(255) NULL AFTER password,
 ADD COLUMN PasswordResetTokenCreatedAt DATETIME NULL AFTER PasswordResetToken;
 
+-- Add is_verified, email_verification_token, and email_token_created_at columns to ms_user
+ALTER TABLE ms_user
+ADD COLUMN is_verified TINYINT(1) NOT NULL,
+ADD COLUMN email_verification_token VARCHAR(255),
+ADD COLUMN email_token_created_at DATETIME;
+
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
 ('Arabic', "https://flagcdn.com/w320/sa.png", 'Kursus Bahasa Arab dirancang untuk membekali peserta dengan kemampuan membaca, menulis, mendengarkan, dan berbicara dalam bahasa Arab secara efektif. Bahasa Arab merupakan salah satu bahasa resmi dunia dan digunakan secara luas di Timur Tengah, Afrika Utara, serta negara-negara Islam. Kursus ini membahas mulai dari dasar huruf dan angka Arab, tata bahasa (nahwu dan sharaf), percakapan sehari-hari, hingga pemahaman teks Al-Quran dan literatur Arab modern. Dengan metode pembelajaran interaktif, siswa diajak untuk praktik dialog, mendengarkan native speaker, serta memahami kebudayaan Arab yang kaya. Kursus ini sangat cocok bagi pemula, pelajar, maupun profesional yang ingin meningkatkan kompetensi komunikasi atau persiapan studi dan bisnis di negara-negara Arab.', NOW(), NOW()),
@@ -167,4 +173,5 @@ INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES
 ("Dana","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/dana_rfzti7.jpg"),
 ("Mandiri","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/mandiri_h8bdrl.png"),
 ("BCA","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/bca_mrhl0t.svg"),
-("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png")
+("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png");
+
