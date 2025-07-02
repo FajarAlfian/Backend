@@ -86,9 +86,14 @@ namespace DlanguageApi.Data
             var query = @"
                 SELECT
                 inv.invoice_id,
+                inv.user_id,
+                inv.payment_method_id,
+                pm.payment_method_name,
+                inv.isPaid,
                 inv.invoice_number       AS invoice_number,
                 inv.created_at           AS invoice_date,
                 inv.total_price          AS total_price,
+                COUNT(ind.invoice_detail_id) AS total_courses,
                 ROW_NUMBER() OVER (
                     PARTITION BY inv.invoice_id
                     ORDER BY ind.invoice_detail_id
@@ -103,6 +108,7 @@ namespace DlanguageApi.Data
                 JOIN ms_category          cat ON cat.category_id  = c.category_id
                 LEFT JOIN tr_schedule_course sc  ON sc.course_id     = c.course_id
                 LEFT JOIN ms_schedule        sch ON sch.schedule_id  = sc.schedule_id
+                LEFT JOIN ms_payment_method pm ON pm.payment_method_id = inv.payment_method_id
                 WHERE inv.invoice_id = @invoiceId
                 ORDER BY ind.invoice_detail_id;";
 
@@ -118,9 +124,15 @@ namespace DlanguageApi.Data
                 {
                     invoice = new Invoice
                     {
+                        invoice_id = reader.GetInt32("invoice_id"),
+                        user_id = reader.GetInt32("user_id"),
                         invoice_number = reader.GetString("invoice_number"),
-                        invoice_date   = reader.GetDateTime("invoice_date"),
-                        total_price    = reader.GetDouble("total_price")
+                        invoice_date = reader.GetDateTime("invoice_date"),
+                        total_price = reader.GetDouble("total_price"),
+                        payment_method_id = reader.GetInt32("payment_method_id"),
+                        payment_method_name = reader.GetString("payment_method_name"),
+                        total_courses = reader.GetInt32("total_courses"),
+                        isPaid = reader.GetBoolean("isPaid")
                     };
                 }
 
