@@ -120,7 +120,7 @@ CREATE TABLE tr_invoice_detail (
 ALTER TABLE tr_invoice_detail
 ADD CONSTRAINT fk_invoice_detail_cart_product
 FOREIGN KEY (cart_product_id) REFERENCES tr_cart_product(cart_product_id)
-ON DELETE SET NULL;
+ON DELETE RESTRICT;
 
 -- Add PasswordResetToken and PasswordResetTokenCreatedAt to ms_user
 ALTER TABLE ms_user
@@ -132,6 +132,9 @@ ALTER TABLE ms_user
 ADD COLUMN is_verified TINYINT(1) NOT NULL,
 ADD COLUMN email_verification_token VARCHAR(255),
 ADD COLUMN email_token_created_at DATETIME;
+
+ALTER TABLE `tr_invoice_detail`
+ADD COLUMN `schedule_course_id` INT(11) NULL AFTER `cart_product_id`;
 
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
@@ -175,3 +178,12 @@ INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES
 ("BCA","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/bca_mrhl0t.svg"),
 ("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png");
 
+--insert
+INSERT INTO ms_schedule (schedule_date) VALUES
+("Monday, 25 Juli 2025"),
+("Tuesday, 26 Juli 2025"),
+("Wednesday, 27 Juli 2025"),
+("Thursday, 28 Juli 2025"),
+("Friday, 29 Juli 2025"),
+("Saturday, 30 Juli 2025"),
+("Sunday, 31 Juli 2025");
