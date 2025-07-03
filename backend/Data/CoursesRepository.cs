@@ -9,6 +9,8 @@ namespace DlanguageApi.Data
         Task<List<Course>> GetAllCoursesAsync();
         Task<Course?> GetCourseByIdAsync(int id);
         Task<Course?> GetCourseByCategoryIdAsync(int id);
+        Task<List<CourseDetail>> GetPaidCourse(int id);
+
         Task<int> CreateCourseAsync(Course course);
         Task<bool> UpdateCourseAsync(Course course);
         Task<bool> DeleteCourseAsync(int id);
@@ -59,6 +61,47 @@ namespace DlanguageApi.Data
             return courses;
         }
         
+        public async Task<List<CourseDetail>> GetPaidCourse(int id)
+{
+    var list = new List<CourseDetail>();
+
+    using var connection = new MySqlConnection(_connectionString);
+    await connection.OpenAsync();
+    string queryString = @"
+        SELECT
+            c.course_name,
+            c.course_image,
+            cat.category_name,    
+            sch.schedule_date 
+        FROM tr_invoice AS inv
+        JOIN tr_invoice_detail AS ind ON ind.invoice_id = inv.invoice_id
+        JOIN tr_schedule_course AS tsc ON tsc.schedule_course_id = ind.schedule_course_id
+        JOIN ms_schedule AS sch ON sch.schedule_id = tsc.schedule_id
+        JOIN ms_courses AS c ON c.course_id = ind.course_id
+        JOIN ms_category AS cat ON cat.category_id = c.category_id
+        WHERE inv.user_id = @user_id AND inv.isPaid = 1
+        ORDER BY inv.invoice_id, ind.invoice_detail_id;
+    ";
+
+    using var command = new MySqlCommand(queryString, connection);
+    command.Parameters.AddWithValue("@user_id", id);
+
+    using var reader = await command.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        list.Add(new CourseDetail
+        {
+            course_name = reader.GetString("course_name"),
+            course_image = reader.GetString("course_image"),
+            category_name = reader.IsDBNull(reader.GetOrdinal("category_name")) ? string.Empty : reader.GetString("category_name"),
+            schedule_date = reader.GetString("schedule_date"),
+        });
+    }
+
+    return list;
+}
+
+        //Read Paid Course
         public async Task<Course?> GetCourseByCategoryIdAsync(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -70,7 +113,6 @@ namespace DlanguageApi.Data
                     LEFT JOIN ms_category cat ON c.category_id = cat.category_id
                     WHERE cat.category_id = @category_id
                     ORDER BY c.course_id";
-
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@category_id", id);
