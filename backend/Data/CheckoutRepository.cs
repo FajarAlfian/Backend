@@ -9,8 +9,8 @@ namespace DlanguageApi.Data
         Task AddToCheckoutAsync(Checkout checkout);
         Task<List<GetCheckout>> GetUserCheckoutAsync(int userId);
         Task<decimal> GetTotalPriceAsync(int userId);
-        Task<bool> IsScheduleCourseInCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
-        Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId); // Ubah signature
+        Task<bool> IsScheduleCourseInCheckoutAsync(int userId, int scheduleCourseId); 
+        Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId); 
         Task ClearUserCartAsync(int userId);
     }
 
@@ -55,7 +55,8 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string query = @"
-                    SELECT cp.cart_product_id, cp.course_id, c.course_image, c.course_name, 
+                    SELECT cp.cart_product_id, cp.course_id, cp.schedule_course_id,
+                    c.course_image, c.course_name, 
                     cat.category_name, sch.schedule_date, c.course_price,
                     cp.user_id, cp.created_at, cp.updated_at
                     FROM tr_cart_product cp
@@ -75,6 +76,7 @@ namespace DlanguageApi.Data
                             {
                                 cart_product_id = reader.GetInt32("cart_product_id"),
                                 course_id = reader.GetInt32("course_id"),
+                                schedule_course_id = reader.GetInt32("schedule_course_id"),
                                 course_image = reader.GetString("course_image"),
                                 course_name = reader.GetString("course_name"),
                                 category_name = reader.GetString("category_name"),
@@ -125,20 +127,38 @@ namespace DlanguageApi.Data
             }
         }
 
-        public async Task<bool> RemoveFromCheckoutAsync(int userId, int scheduleCourseId)
+        public async Task<bool> RemoveFromCheckoutAsync(int userId, int cartProductId)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+
+            const string sqlNullChild = @"
+        UPDATE tr_invoice_detail
+        SET cart_product_id = NULL
+        WHERE cart_product_id = @cartId;
+        ";
+            using (var cmd0 = new MySqlCommand(sqlNullChild, connection))
             {
-                await connection.OpenAsync();
-                string query = "DELETE FROM tr_cart_product WHERE user_id = @user_id AND schedule_course_id = @schedule_course_id";
-                using (var command = new MySqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@user_id", userId);
-                    command.Parameters.AddWithValue("@schedule_course_id", scheduleCourseId);
-                    int affectedRows = await command.ExecuteNonQueryAsync();
-                    return affectedRows > 0;
-                }
+                cmd0.Parameters.AddWithValue("@cartId", cartProductId);
+                await cmd0.ExecuteNonQueryAsync();
             }
+
+
+            const string sqlDeleteCart = @"
+        DELETE FROM tr_cart_product
+        WHERE user_id = @userId
+        AND cart_product_id = @cartId;
+        ";
+            int affected;
+            using (var cmd1 = new MySqlCommand(sqlDeleteCart, connection))
+            {
+                cmd1.Parameters.AddWithValue("@userId",  userId);
+                cmd1.Parameters.AddWithValue("@cartId",  cartProductId);
+                affected = await cmd1.ExecuteNonQueryAsync();
+            }
+
+            return affected > 0;
         }
 
         public async Task ClearUserCartAsync(int userId)

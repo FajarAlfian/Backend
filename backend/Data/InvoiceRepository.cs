@@ -12,7 +12,7 @@ namespace DlanguageApi.Data
         Task<bool> UpdateInvoiceAsync(Invoice invoice);
         Task<bool> DeleteInvoiceAsync(int id);
         Task<double> GetTotalPriceAsync(int userId);
-        Task CreateInvoiceDetailAsync(int invoiceId, int cartProductId, int courseId, double subTotalPrice);
+        Task CreateInvoiceDetailAsync(int invoiceId, int cartProductId, int courseId, double subTotalPrice, int schedule_course_id);
         Task<int> GetLastInvoiceNumberAsync();
         Task<string> GetPaymentMethodNameByIdAsync(int payment_method_id);
     }
@@ -78,113 +78,114 @@ namespace DlanguageApi.Data
             return invoices;
         }
 
-        public async Task<Invoice?> GetInvoiceByIdAsync(int id)
+public async Task<Invoice?> GetInvoiceByIdAsync(int invoiceId)
+{
+    using var conn = new MySqlConnection(_connectionString);
+    await conn.OpenAsync();
+
+    const string sql = @"
+SELECT
+  inv.invoice_id,
+  inv.invoice_number,
+  inv.created_at    AS invoice_date,
+  inv.total_price,
+  COALESCE(pm.payment_method_name,'')       AS payment_method_name,
+  inv.isPaid,
+  COUNT(ind.invoice_detail_id)
+    OVER (PARTITION BY inv.invoice_id)      AS total_courses,
+  ROW_NUMBER()
+    OVER (
+      PARTITION BY inv.invoice_id
+      ORDER BY ind.invoice_detail_id
+    )                                        AS detail_no,
+  c.course_name,
+  cat.category_name   AS language,
+  sch.schedule_date   AS schedule,
+  ind.sub_total_price AS price
+FROM tr_invoice           AS inv
+JOIN tr_invoice_detail   AS ind
+  ON ind.invoice_id = inv.invoice_id
+JOIN tr_schedule_course  AS tsc
+  ON tsc.schedule_course_id = ind.schedule_course_id
+JOIN ms_schedule         AS sch
+  ON sch.schedule_id = tsc.schedule_id
+JOIN ms_courses          AS c
+  ON c.course_id = ind.course_id
+JOIN ms_category         AS cat
+  ON cat.category_id = c.category_id
+LEFT JOIN ms_payment_method AS pm
+  ON pm.payment_method_id = inv.payment_method_id
+WHERE inv.invoice_id = @invoiceId
+ORDER BY ind.invoice_detail_id;
+";
+
+    using var cmd = new MySqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@invoiceId", invoiceId);
+
+    Invoice? invoice = null;
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        if (invoice == null)
         {
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
-            var query = @"
-                SELECT
-                inv.invoice_id,
-                inv.user_id,
-                inv.payment_method_id,
-                pm.payment_method_name,
-                inv.isPaid,
-                inv.invoice_number       AS invoice_number,
-                inv.created_at           AS invoice_date,
-                inv.total_price          AS total_price,
-                COUNT(ind.invoice_detail_id) AS total_courses,
-                ROW_NUMBER() OVER (
-                    PARTITION BY inv.invoice_id
-                    ORDER BY ind.invoice_detail_id
-                )                         AS detail_no,
-                c.course_name            AS course_name,
-                cat.category_name        AS LANGUAGE,
-                sch.schedule_date        AS SCHEDULE,
-                ind.sub_total_price      AS price
-                FROM tr_invoice           inv
-                JOIN tr_invoice_detail    ind ON ind.invoice_id   = inv.invoice_id
-                JOIN ms_courses           c   ON c.course_id      = ind.course_id
-                JOIN ms_category          cat ON cat.category_id  = c.category_id
-                LEFT JOIN tr_schedule_course sc  ON sc.course_id     = c.course_id
-                LEFT JOIN ms_schedule        sch ON sch.schedule_id  = sc.schedule_id
-                LEFT JOIN ms_payment_method pm ON pm.payment_method_id = inv.payment_method_id
-                WHERE inv.invoice_id = @invoiceId
-                ORDER BY ind.invoice_detail_id;";
-
-            using var cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@invoiceId", id);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-            Invoice? invoice = null;
-
-            while (await reader.ReadAsync())
+            invoice = new Invoice
             {
-                if (invoice is null)
-                {
-                    invoice = new Invoice
-                    {
-                        invoice_id = reader.GetInt32("invoice_id"),
-                        user_id = reader.GetInt32("user_id"),
-                        invoice_number = reader.GetString("invoice_number"),
-                        invoice_date = reader.GetDateTime("invoice_date"),
-                        total_price = reader.GetDouble("total_price"),
-                        payment_method_id = reader.GetInt32("payment_method_id"),
-                        payment_method_name = reader.GetString("payment_method_name"),
-                        total_courses = reader.GetInt32("total_courses"),
-                        isPaid = reader.GetBoolean("isPaid")
-                    };
-                }
-
-                invoice.detail.Add(new InvoiceDetail
-                {
-                    detail_no   = reader.GetInt32("detail_no"),
-                    course_name = reader.GetString("course_name"),
-                    language   = reader.GetString("LANGUAGE"),
-                    schedule   = reader.GetString("SCHEDULE"),
-                    price      = reader.GetDouble("price")
-                });
-            }
-
-            return invoice;
+                invoice_id          = reader.GetInt32("invoice_id"),
+                invoice_number      = reader.GetString("invoice_number"),
+                invoice_date        = DateTime.Parse(reader.GetString("invoice_date")),
+                total_price         = reader.GetDouble("total_price"),
+                payment_method_name = reader.GetString("payment_method_name"),
+                isPaid              = reader.GetBoolean("isPaid"),
+                total_courses       = reader.GetInt32("total_courses"),
+                detail              = new List<InvoiceDetail>()
+            };
         }
 
+        invoice.detail.Add(new InvoiceDetail
+        {
+            detail_no   = reader.GetInt32("detail_no"),
+            course_name = reader.GetString("course_name"),
+            language    = reader.GetString("language"),
+            schedule    = reader.GetString("schedule"),
+            price       = reader.GetDouble("price")
+        });
+    }
+
+    return invoice;
+}
 
 
-            public async Task<int> CreateInvoiceAsync(Invoice invoice)
-            {
-                using (var connection = new MySqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-                    string queryString = @"
-                        INSERT INTO tr_invoice
-                            (invoice_number, user_id, total_price, payment_method_id, isPaid, created_at, updated_at)
-                        VALUES
-                            (@invoice_number,
-                            @user_id,
-                            (SELECT COALESCE(SUM(course_price),0)
-                                FROM tr_cart_product
-                            WHERE user_id = @user_id),
-                            @payment_method_id,
-                            @isPaid,
-                            @created_at,
-                            @updated_at);
-                        SELECT LAST_INSERT_ID();";
 
-                    using (var command = new MySqlCommand(queryString, connection))
-                    {
-                        command.Parameters.AddWithValue("@invoice_number", invoice.invoice_number);
-                        command.Parameters.AddWithValue("@user_id",         invoice.user_id);
-                        command.Parameters.AddWithValue("@payment_method_id", invoice.payment_method_id);
-                        command.Parameters.AddWithValue("@isPaid",          invoice.isPaid);
-                        command.Parameters.AddWithValue("@created_at",      DateTime.UtcNow);
-                        command.Parameters.AddWithValue("@updated_at",      DateTime.UtcNow);
+    public async Task<int> CreateInvoiceAsync(Invoice invoice)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        await connection.OpenAsync();
 
-                        var result = await command.ExecuteScalarAsync();
-                        return Convert.ToInt32(result);
-                    }
-                }
-            }
+        const string query = @"
+            INSERT INTO tr_invoice
+                (invoice_number, user_id, total_price, payment_method_id, isPaid, created_at, updated_at)
+            VALUES
+                (@invoice_number,
+                @user_id,
+                @total_price,
+                @payment_method_id,
+                @isPaid,
+                @created_at,
+                @updated_at);
+            SELECT LAST_INSERT_ID();";
+
+        using var cmd = new MySqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@invoice_number",    invoice.invoice_number);
+        cmd.Parameters.AddWithValue("@user_id",           invoice.user_id);
+        cmd.Parameters.AddWithValue("@total_price",       invoice.total_price);      // <-- pakai nilai dari controller
+        cmd.Parameters.AddWithValue("@payment_method_id", invoice.payment_method_id);
+        cmd.Parameters.AddWithValue("@isPaid",            invoice.isPaid);
+        cmd.Parameters.AddWithValue("@created_at",        invoice.created_at);
+        cmd.Parameters.AddWithValue("@updated_at",        invoice.updated_at);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
 
         public async Task<bool> UpdateInvoiceAsync(Invoice invoice)
         {
@@ -250,19 +251,20 @@ namespace DlanguageApi.Data
             }
         }
 
-        public async Task CreateInvoiceDetailAsync(int invoiceId, int cartProductId, int courseId, double subTotalPrice)
+        public async Task CreateInvoiceDetailAsync(int invoiceId, int cartProductId, int courseId, double subTotalPrice, int schedule_course_id)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 string query = @"
-                    INSERT INTO tr_invoice_detail (invoice_id, cart_product_id, course_id, sub_total_price, created_at, updated_at)
-                    VALUES (@invoice_id, @cart_product_id, @course_id, @sub_total_price, @created_at, @updated_at)";
+                    INSERT INTO tr_invoice_detail (invoice_id, cart_product_id, course_id, schedule_course_id, sub_total_price, created_at, updated_at)
+                    VALUES (@invoice_id, @cart_product_id, @course_id, @schedule_course_id, @sub_total_price, @created_at, @updated_at)";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@invoice_id", invoiceId);
                     command.Parameters.AddWithValue("@cart_product_id", cartProductId);
                     command.Parameters.AddWithValue("@course_id", courseId);
+                    command.Parameters.AddWithValue("@schedule_course_id", schedule_course_id);
                     command.Parameters.AddWithValue("@sub_total_price", subTotalPrice);
                     command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);

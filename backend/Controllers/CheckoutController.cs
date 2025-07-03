@@ -88,22 +88,38 @@ public class CheckoutController : ControllerBase
                 $"Terjadi kesalahan server: {ex.Message}", 500));
         }
     }
-
-    [HttpDelete("remove/{scheduleCourseId}")]
-    public async Task<IActionResult> RemoveFromCheckout(int scheduleCourseId)
+ [HttpDelete("remove/{cartProductId}")]
+    public async Task<IActionResult> RemoveFromCheckout(int cartProductId)
     {
         try
         {
             var userIdClaim = User.FindFirst("userId");
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null ||
+                !int.TryParse(userIdClaim.Value, out var userId))
             {
-                return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
+                return Unauthorized(ApiResult<object>.Error(
+                    "User ID tidak valid atau tidak ditemukan di token.", 401));
             }
 
-            var removed = await _checkoutRepository.RemoveFromCheckoutAsync(userId, scheduleCourseId);
+            var removed = await _checkoutRepository
+                .RemoveFromCheckoutAsync(userId, cartProductId);
             if (!removed)
-                return NotFound(ApiResult<object>.Error("Schedule course tidak ditemukan di checkout user", 404));
-            return Ok(ApiResult<object>.SuccessResult("Schedule course berhasil dihapus dari checkout", 200));
+                return NotFound(ApiResult<object>.Error(
+                    "Item tidak ditemukan di checkout user", 404));
+
+            var items = await _checkoutRepository.GetUserCheckoutAsync(userId);
+            var total = items.Sum(x => x.course_price);
+
+            var result = new
+            {
+                items,
+                total
+            };
+
+            return Ok(ApiResult<object>.SuccessResult(
+                result,
+                "Item berhasil dihapus dari checkout",
+                200));
         }
         catch (Exception ex)
         {
