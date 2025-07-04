@@ -94,7 +94,7 @@ namespace backend.Services
                 
                 // Base URL untuk verification link (bisa dari frontend atau backend)
                 var baseUrl = _appSettings.FrontendBaseUrl;
-                var verificationLink = $"{baseUrl}/login";
+                var verificationLink = $"{baseUrl}/verify-email?token={verificationToken}";
                 
                 // HTML template yang professional dan menarik
                 var htmlBody = $@"
@@ -153,7 +153,7 @@ namespace backend.Services
                             
                             <p><strong>Verification Token:</strong></p>
                             <div class='token-info'>
-                                {verificationToken}
+                            <p>Link alternatif : {verificationLink}</p>
                             </div>
                         
                         <div class='footer'>
@@ -198,7 +198,7 @@ namespace backend.Services
             {
                 var subject = "Reset Password Anda - " + _appSettings.AppName;
                 var baseUrl = _appSettings.FrontendBaseUrl;
-                var resetLink = $"{baseUrl}/reset-password?token={resetToken}";
+                var resetLink = $"{baseUrl}/new-password?token={resetToken}";
 
                 var htmlBody = $@"
                 <!DOCTYPE html>
@@ -209,7 +209,7 @@ namespace backend.Services
                         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
                         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
                         .header {{ background: linear-gradient(135deg, #226957 0%, #ea9e1f 100%); color: white; padding: 30px; text-align: center; border-radius: 10px; }}
-                        .btn {{ display: inline-block; padding: 15px 30px; background: #226957; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }}
+                        .btn {{ display: inline-block; padding: 15px 30px; background: #ea9e1f; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }}
                         .warning {{ background-color: #fff3cd; border: 1px solid #ea9e1f; padding: 15px; border-radius: 5px; margin: 20px 0; }}
                     </style>
                 </head>
