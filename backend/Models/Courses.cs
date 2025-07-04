@@ -22,7 +22,20 @@ namespace DlanguageApi.Models
 
         public string category_name { get; set; } = string.Empty;
 
-        public DateTime created_at { get; set; } = DateTime.UtcNow; 
-        public DateTime updated_at { get; set; } = DateTime.UtcNow; 
+        public DateTime created_at { get; set; } = DateTime.UtcNow;
+        public DateTime updated_at { get; set; } = DateTime.UtcNow;
     }
+
+    public class CourseDetail
+    {
+        [Required]
+        public string course_name { get; set; } = string.Empty;
+        [Required]
+        public string course_image { get; set; } = string.Empty;
+        [Required]
+        public string category_name { get; set; } = string.Empty;
+        [Required]
+        public string schedule_date { get; set; } = string.Empty;
+    }
+    
 }

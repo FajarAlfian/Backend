@@ -18,6 +18,7 @@ namespace DlanguageApi.Controllers
             _coursesRepository = coursesRepository;
             _logger = logger;
         }
+
         [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<List<Course>>> GetCourses()
@@ -47,6 +48,26 @@ namespace DlanguageApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil kursus dengan ID {course_id}", id);
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
+
+        [HttpGet("paid")]
+        public async Task<ActionResult<List<CourseDetail>>> GetPaidCourses()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst("userId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResult<object>.Error("User ID tidak valid atau tidak ditemukan di token.", 401));
+                }
+                var courses = await _coursesRepository.GetPaidCourse(userId);
+                return Ok(ApiResult<List<CourseDetail>>.SuccessResult(courses, "Daftar kursus berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil daftar kursus");
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }

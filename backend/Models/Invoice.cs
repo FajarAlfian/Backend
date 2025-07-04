@@ -31,15 +31,13 @@ namespace DlanguageApi.Models
     }
 
     public class InvoiceCreateRequest
-    {
-        [Required]
-        public int user_id { get; set; }
-
+     {
         [Required]
         public int payment_method_id { get; set; }
-        [Required]
-        public string payment_method_name { get; set; } = string.Empty;
 
+        [Required]
+        [MinLength(1)]
+        public List<int> cart_product_ids { get; set; } = new();
     }
     public class InvoiceUpdateRequest
     {
