@@ -180,10 +180,46 @@ INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES
 
 --insert
 INSERT INTO ms_schedule (schedule_date) VALUES
-("Monday, 25 Juli 2025"),
-("Tuesday, 26 Juli 2025"),
-("Wednesday, 27 Juli 2025"),
-("Thursday, 28 Juli 2025"),
-("Friday, 29 Juli 2025"),
-("Saturday, 30 Juli 2025"),
-("Sunday, 31 Juli 2025");
+("2025-07-21"),
+("2025-07-22"),
+("2025-07-23"),
+("2025-07-24"),
+("2025-07-25"),
+("2025-07-26"),
+("2025-07-27");
+
+
+
+ALTER TABLE ms_category ADD COLUMN category_banner VARCHAR(255) AFTER category_description;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751933810/Screenshot_2025-07-08_071443_fdqm97.png'
+WHERE category_id = 1;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751933940/Screenshot_2025-07-08_071840_chneqc.png'
+WHERE category_id = 2;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751933952/Screenshot_2025-07-08_070523_enkvre.png'
+WHERE category_id = 3;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934103/Screenshot_2025-07-08_071954_emoxte.png'
+WHERE category_id = 4;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934112/Screenshot_2025-07-08_072037_fqkrm2.png'
+WHERE category_id = 5;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934113/Screenshot_2025-07-08_072108_btqzyq.png'
+WHERE category_id = 6;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934113/Screenshot_2025-07-08_072127_cs0hgt.png'
+WHERE category_id = 7;
+
+UPDATE ms_category
+SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934667/Screenshot_2025-07-08_073057_kf9rti.png'
+WHERE category_id = 8;

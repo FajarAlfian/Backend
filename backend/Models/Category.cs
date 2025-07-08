@@ -17,6 +17,7 @@ namespace DlanguageApi.Models
         [Required]
         [StringLength(100)]
         public string category_image { get; set; } = string.Empty;
+        public string category_banner { get; set; } = string.Empty;
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;

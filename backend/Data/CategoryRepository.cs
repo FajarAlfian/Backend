@@ -32,7 +32,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT category_id, category_name, category_description, category_image, created_at, updated_at
+                    SELECT category_id, category_name, category_description, category_image, category_banner, created_at, updated_at
                     FROM ms_category
                     ORDER BY category_name";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -46,6 +46,7 @@ namespace DlanguageApi.Data
                             category_name = reader.GetString("category_name"),
                             category_description = reader.GetString("category_description"),
                             category_image = reader.GetString("category_image"),
+                            category_banner = reader.GetString("category_banner"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
@@ -62,7 +63,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT category_id, category_name, category_description, category_image, created_at, updated_at
+                    SELECT category_id, category_name, category_description, category_image, category_banner, created_at, updated_at
                     FROM ms_category
                     WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -78,6 +79,7 @@ namespace DlanguageApi.Data
                                 category_name = reader.GetString("category_name"),
                                 category_description = reader.GetString("category_description"),
                                 category_image = reader.GetString("category_image"),
+                                category_banner = reader.GetString("category_banner"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
@@ -95,7 +97,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT category_id, category_name, category_description, category_image, created_at, updated_at
+                    SELECT category_id, category_name, category_description, category_image, category_banner, created_at, updated_at
                     FROM ms_category
                     WHERE category_name = @category_name";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -111,6 +113,7 @@ namespace DlanguageApi.Data
                                 category_name = reader.GetString("category_name"),
                                 category_description = reader.GetString("category_description"),
                                 category_image = reader.GetString("category_image"),
+                                category_banner = reader.GetString("category_banner"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime() 
                             };
@@ -128,7 +131,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    INSERT INTO ms_category (category_name, category_description, category_image, created_at, updated_at)
+                    INSERT INTO ms_category (category_name, category_description, category_image, category_banner, created_at, updated_at)
                     VALUES (@category_name, @category_description, @category_image, @created_at, @updated_at);
                     SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -136,6 +139,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@category_name", category.category_name);
                     command.Parameters.AddWithValue("@category_description", category.category_description);
                     command.Parameters.AddWithValue("@category_image", category.category_image);
+                    command.Parameters.AddWithValue("@category_banner", category.category_banner);
                     command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
                     var result = await command.ExecuteScalarAsync();
@@ -151,7 +155,7 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     UPDATE ms_category
-                    SET category_name = @category_name, category_description = @category_description, category_image = @category_image, updated_at = @updated_at
+                    SET category_name = @category_name, category_description = @category_description, category_image = @category_image, category_banner = @category_banner, updated_at = @updated_at
                     WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -159,6 +163,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@category_name", category.category_name);
                     command.Parameters.AddWithValue("@category_description", category.category_description); 
                     command.Parameters.AddWithValue("@category_image", category.category_image);
+                    command.Parameters.AddWithValue("@category_banner", category.category_banner);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
