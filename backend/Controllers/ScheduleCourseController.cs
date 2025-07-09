@@ -11,14 +11,56 @@ namespace DlanguageApi.Controllers
     public class ScheduleCourseController : ControllerBase
     {
         private readonly IScheduleCourseRepository _scheduleCourseRepository;
+        private readonly IScheduleRepository _scheduleRepository;
         private readonly ILogger<ScheduleCourseController> _logger;
 
-        public ScheduleCourseController(IScheduleCourseRepository scheduleCourseRepository, ILogger<ScheduleCourseController> logger)
-        {
-            _scheduleCourseRepository = scheduleCourseRepository;
-            _logger = logger;
-        }
+        public ScheduleCourseController(
+            IScheduleCourseRepository scheduleCourseRepository,
+            IScheduleRepository scheduleRepository,
+            ILogger<ScheduleCourseController> logger)
+            {
+                _scheduleCourseRepository = scheduleCourseRepository;
+            _scheduleRepository = scheduleRepository;
+                _logger = logger;
+            }
 
+        [Authorize(Roles = "admin")]
+        [HttpPost("with-date")]
+        public async Task<ActionResult> CreateScheduleCourseWithDate(
+            [FromBody] ScheduleCourseWithDateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(
+                    ModelState.Values.SelectMany(v => v.Errors)
+                                    .Select(e => e.ErrorMessage)
+                                    .ToList(), 400));
+
+            var newSchedule = new Schedule
+            {
+                schedule_date = request.schedule_date,
+                created_at = DateTime.Now
+            };
+            var scheduleId = await _scheduleRepository.CreateScheduleAsync(newSchedule);
+
+            var newScheduleCourse = new ScheduleCourse
+            {
+                course_id = request.course_id,
+                schedule_id = scheduleId,
+                created_at = DateTime.Now
+            };
+            var scheduleCourseId = await _scheduleCourseRepository
+                                        .CreateScheduleCourseAsync(newScheduleCourse);
+
+            var result = new
+            {
+                schedule_course_id = scheduleCourseId,
+                course_id = request.course_id,
+                schedule_id = scheduleId,
+                schedule_date = request.schedule_date
+            };
+            return Ok(ApiResult<object>
+                .SuccessResult(result, "ScheduleCourse dengan date berhasil dibuat", 201));
+        }
         [AllowAnonymous]
         [HttpGet]
         

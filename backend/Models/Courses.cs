@@ -37,5 +37,13 @@ namespace DlanguageApi.Models
         [Required]
         public string schedule_date { get; set; } = string.Empty;
     }
+        public class ScheduleCourseWithDateRequest
+    {
+        [Required]
+        public int course_id { get; set; }
+
+        [Required]
+        public string schedule_date { get; set; } = string.Empty;
+    }
     
 }
