@@ -40,6 +40,7 @@ namespace DlanguageApi.Data
                 string queryString = @"
                     SELECT user_id, username, email, password, role, created_at, updated_at
                     FROM ms_user
+                    WHERE is_deleted = 0
                     ORDER BY username";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -70,7 +71,8 @@ namespace DlanguageApi.Data
                 string queryString = @"
                     SELECT user_id, username, email, password, role, created_at, updated_at
                     FROM ms_user
-                    WHERE user_id = @user_id";
+                    WHERE user_id = @user_id
+                    AND is_deleted = 0";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", id);
@@ -197,10 +199,12 @@ namespace DlanguageApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                string queryString = "DELETE FROM ms_user WHERE user_id = @user_id";
+                string queryString =
+                @"UPDATE ms_user SET is_deleted = 1, updated_at = @updated_at WHERE user_id = @user_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", id);
+                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
                 }

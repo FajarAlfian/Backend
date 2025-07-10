@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
+
 
 namespace DlanguageApi.Controllers
 {
@@ -110,7 +112,7 @@ namespace DlanguageApi.Controllers
             }
         }
 
-        
+
         [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] Course course)
@@ -139,7 +141,33 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-        
+
+        [Authorize(Roles = "admin")]
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchCourse(int id, [FromBody] JsonPatchDocument<Course> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest(ApiResult<object>.Error("Payload untuk patch tidak boleh kosong", 400));
+
+            var existing = await _coursesRepository.GetCourseByIdAsync(id);
+            if (existing == null)
+                return NotFound(ApiResult<object>.Error($"Course ID {id} tidak ditemukan", 404));
+
+            patchDoc.ApplyTo(existing, ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage).ToList(), 400));
+
+            var ok = await _coursesRepository.UpdateCourseAsync(existing);
+            if (!ok)
+                return StatusCode(500, ApiResult<object>.Error("Gagal menyimpan perubahan", 500));
+
+            return NoContent();
+        }
+
+
         [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
@@ -147,7 +175,7 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingCourse = await _coursesRepository.GetCourseByIdAsync(id);
-                if (existingCourse == null) 
+                if (existingCourse == null)
                     return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _coursesRepository.DeleteCourseAsync(id);
@@ -162,5 +190,15 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
+        [Authorize(Roles = "admin")]
+        [HttpPut("{id}/restore")]
+        public async Task<IActionResult> RestoreCourse(int id)
+        {
+            var success = await _coursesRepository.RestoreCourseAsync(id);
+            if (!success)
+                return NotFound(ApiResult<object>.Error($"Kursus dengan ID {id} tidak ditemukan", 404));
+            return NoContent();
+        }
+
     }
 }

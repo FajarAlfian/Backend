@@ -133,8 +133,15 @@ ADD COLUMN is_verified TINYINT(1) NOT NULL,
 ADD COLUMN email_verification_token VARCHAR(255),
 ADD COLUMN email_token_created_at DATETIME;
 
-ALTER TABLE `tr_invoice_detail`
-ADD COLUMN `schedule_course_id` INT(11) NULL AFTER `cart_product_id`;
+ALTER TABLE tr_invoice_detail
+ADD COLUMN schedule_course_id INT(11) NULL AFTER cart_product_id;
+
+ALTER TABLE ms_user
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_verified;
+
+ALTER TABLE ms_courses
+ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1
+AFTER category_id;
 
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
