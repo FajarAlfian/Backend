@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace DlanguageApi.Controllers
 {
@@ -25,7 +26,23 @@ namespace DlanguageApi.Controllers
         {
             try
             {
-                var paymentMethods = await _paymentMethodRepository.GetAllPaymentMethodAsync();
+                var paymentMethods = await _paymentMethodRepository.GetPaymentMethodActive();
+                return Ok(ApiResult<List<PaymentMethod>>.SuccessResult(paymentMethods, "Payment method berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil data payment method");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpGet("all")]
+        public async Task<ActionResult<List<PaymentMethod>>> GetAllPaymentMethods()
+        {
+            try
+            {
+                var paymentMethods = await _paymentMethodRepository.GetAllPaymentMethod();
                 return Ok(ApiResult<List<PaymentMethod>>.SuccessResult(paymentMethods, "Payment method berhasil diambil", 200));
             }
             catch (Exception ex)
@@ -63,11 +80,13 @@ namespace DlanguageApi.Controllers
                 var newPaymentMethod = new PaymentMethod
                 {
                     payment_method_name = request.payment_method_name,
+                    payment_method_logo = request.payment_method_logo,
+                    is_active = request.is_active,
                     created_at = DateTime.Now
                 };
                 var payment_method_id = await _paymentMethodRepository.CreatePaymentMethodAsync(newPaymentMethod);
                 newPaymentMethod.payment_method_id = payment_method_id;
-                return Ok(ApiResult<object>.SuccessResult(new { payment_method_id, payment_method_name = newPaymentMethod.payment_method_name }, "Add payment method berhasil", 201));
+                return Ok(ApiResult<object>.SuccessResult(new { payment_method_id, payment_method_name = newPaymentMethod.payment_method_name, is_active = newPaymentMethod.is_active }, "Add payment method berhasil", 201));
             }
             catch (Exception ex)
             {
@@ -105,6 +124,32 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
+
+        [Authorize(Roles = "admin")]
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchPaymentMethod(int id, [FromBody] JsonPatchDocument<PaymentMethod> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest(ApiResult<object>.Error("Payload untuk patch tidak boleh kosong", 400));
+
+            var existing = await _paymentMethodRepository.GetPaymentMethodByIdAsync(id);
+            if (existing == null)
+                return NotFound(ApiResult<object>.Error($"Payment Method ID {id} tidak ditemukan", 404));
+
+            patchDoc.ApplyTo(existing, ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage).ToList(), 400));
+
+            var ok = await _paymentMethodRepository.UpdatePaymentMethodAsync(existing);
+            if (!ok)
+                return StatusCode(500, ApiResult<object>.Error("Gagal menyimpan perubahan", 500));
+
+            return NoContent();
+        }
+
         
         [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
