@@ -178,6 +178,7 @@ VALUES
 'Germany Language for Junior adalah kursus bahasa Jerman yang dirancang khusus untuk anak-anak dan remaja. Program ini mengajarkan dasar-dasar bahasa Jerman, seperti kosa kata sehari-hari, pengucapan, serta tata bahasa yang mudah dipahami. Melalui aktivitas interaktif dan latihan berbicara, siswa akan mampu berkomunikasi secara sederhana dalam bahasa Jerman. Kursus ini juga membekali peserta dengan pengetahuan budaya Jerman, permainan edukatif, dan pembelajaran visual yang menarik. Sangat cocok bagi anak-anak yang ingin mengenal bahasa asing baru dan membangun fondasi yang kuat untuk jenjang pendidikan berikutnya.',
 2);
 
+-- Insert default payment into ms_payment_method
 INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES 
 ("Gopay","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/gopay_qyfauu.png"),
 ("OVO","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325284/ovo_qbpieq.jpg"),
@@ -186,7 +187,7 @@ INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES
 ("BCA","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/bca_mrhl0t.svg"),
 ("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png");
 
---insert
+--insert default date
 INSERT INTO ms_schedule (schedule_date) VALUES
 ("2025-07-21"),
 ("2025-07-22"),
@@ -196,7 +197,7 @@ INSERT INTO ms_schedule (schedule_date) VALUES
 ("2025-07-26"),
 ("2025-07-27");
 
-
+-- add banner
 ALTER TABLE ms_category ADD COLUMN category_banner VARCHAR(255) AFTER category_description;
 
 UPDATE ms_category
@@ -231,6 +232,7 @@ UPDATE ms_category
 SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934667/Screenshot_2025-07-08_073057_kf9rti.png'
 WHERE category_id = 8;
 
+-- add is_active
 ALTER TABLE ms_payment_method
 ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 0
 AFTER payment_method_id;
@@ -258,3 +260,40 @@ WHERE payment_method_id = 5;
 UPDATE ms_payment_method
 SET is_active = 1
 WHERE payment_method_id = 6;
+
+-- add is_active
+ALTER TABLE ms_category
+ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 0
+AFTER category_banner;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 1;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 2;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 3;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 4;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 5;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 6;
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 7; 
+
+UPDATE ms_category
+SET is_active = 1
+WHERE category_id = 8;
