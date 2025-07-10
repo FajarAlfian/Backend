@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace DlanguageApi.Controllers
 {
@@ -22,6 +23,21 @@ namespace DlanguageApi.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<List<Category>>> GetCategories()
+        {
+            try
+            {
+                var categories = await _categoriesRepository.GetActiveCategoriesAsync();
+                return Ok(ApiResult<List<Category>>.SuccessResult(categories, "Kategori berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil data kategori");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
+        [Authorize(Roles = "admin")]
+        [HttpGet("all")]
+        public async Task<ActionResult<List<Category>>> GetAllCategories()
         {
             try
             {
@@ -82,11 +98,12 @@ namespace DlanguageApi.Controllers
                     category_name = request.category_name,
                     category_description = request.category_description,
                     category_image = request.category_image,
+                    category_banner = request.category_banner,
                     created_at = DateTime.Now
                 };
                 var category_id = await _categoriesRepository.CreateCategoryAsync(newCategory);
                 newCategory.category_id = category_id;
-                return Ok(ApiResult<object>.SuccessResult(new { category_id, category_name = newCategory.category_name, category_description = newCategory.category_description, category_image = newCategory.category_image }, "Add Category berhasil", 201));
+                return Ok(ApiResult<object>.SuccessResult(new { category_id, category_name = newCategory.category_name, category_description = newCategory.category_description, category_image = newCategory.category_image, category_banner = newCategory.category_banner }, "Add Category berhasil", 201));
             }
             catch (Exception ex)
             {
@@ -94,15 +111,13 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-        
+
         [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryRequest request)
         {
             try
             {
-                // if (id != category.category_id)
-                //     return BadRequest(ApiResult<object>.Error("ID kategori tidak sesuai", 400));
                 if (!ModelState.IsValid)
                     return BadRequest(ApiResult<object>.Error(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
 
@@ -118,7 +133,7 @@ namespace DlanguageApi.Controllers
                 };
                 var success = await _categoriesRepository.UpdateCategoryAsync(updateData);
                 if (success)
-                    return NoContent(); 
+                    return NoContent();
 
                 return StatusCode(500, ApiResult<object>.Error("Gagal mengupdate kategori", 500));
             }
@@ -128,7 +143,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-        
+
         [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
@@ -136,7 +151,7 @@ namespace DlanguageApi.Controllers
             try
             {
                 var existingCategory = await _categoriesRepository.GetCategoryByIdAsync(id);
-                if (existingCategory == null) 
+                if (existingCategory == null)
                     return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
 
                 var success = await _categoriesRepository.DeleteCategoryAsync(id);
@@ -150,6 +165,33 @@ namespace DlanguageApi.Controllers
                 _logger.LogError(ex, "Error saat menghapus kategori dengan ID {category_id}", id);
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
-        }
+        }
+        [Authorize(Roles = "admin")]
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchCategory(int id, [FromBody] JsonPatchDocument<Category> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest(ApiResult<object>.Error("Payload untuk patch tidak boleh kosong", 400));
+
+            var existing = await _categoriesRepository.GetCategoryByIdAsync(id);
+            if (existing == null)
+                return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
+
+            // Apply patch & validasi
+            patchDoc.ApplyTo(existing, ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(
+                    ModelState.Values.SelectMany(v => v.Errors)
+                                    .Select(e => e.ErrorMessage)
+                                    .ToList(), 400));
+
+            // Simpan perubahan
+            var ok = await _categoriesRepository.UpdateCategoryAsync(existing);
+            if (!ok)
+                return StatusCode(500, ApiResult<object>.Error("Gagal menyimpan perubahan", 500));
+
+            return NoContent();
+        }
     }
 }
