@@ -21,11 +21,13 @@ namespace DlanguageApi.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpGet]
-        public async Task<ActionResult<List<User>>> GetUsers()
+        public async Task<ActionResult<List<User>>> GetUsers([FromQuery] string? search = null)
         {
             try
             {
-                var users = await _userRepository.GetAllUsersAsync();
+            var users = string.IsNullOrWhiteSpace(search)
+            ? await _userRepository.GetAllUsersAsync()
+            : await _userRepository.SearchUsersAsync(search);
                 return Ok(ApiResult<List<User>>.SuccessResult(users, "Daftar user berhasil diambil", 200));
             }
             catch (Exception ex)

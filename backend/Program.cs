@@ -1,12 +1,12 @@
 // Import namespace untuk ProductRepository
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using DlanguageApi.Data;
 using backend.Services;
 using DlanguageApi.Configuration;
 using DlanguageApi.Models;
-
 using System.Security.Cryptography; 
 
 // =====================================
@@ -17,7 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // AddControllers() = mendaftarkan services untuk MVC Controllers
 // Tanpa ini, controller tidak akan berfungsi
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddNewtonsoftJson();
+
 
 // AddEndpointsApiExplorer() = untuk metadata endpoints API
 // Diperlukan untuk Swagger documentation

@@ -24,6 +24,7 @@ namespace DlanguageApi.Models
         public string role { get; set; } = "member";
 
         public bool is_verified { get; set; } = false;
+        public bool is_deleted { get; set; } = false;
         
         public string? email_verification_token { get; set; }
         

@@ -103,6 +103,10 @@ namespace DlanguageApi.Controllers
                 {
                     return Unauthorized(ApiResult<object>.Error("Email atau password salah", 401));
                 }
+                 if (!user.is_verified)
+                 {
+                 return Unauthorized(ApiResult<object>.Error("Email belum diverifikasi. Silakan cek inbox Anda.", 401));
+                 }
 
                 // Generate JWT Token
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
