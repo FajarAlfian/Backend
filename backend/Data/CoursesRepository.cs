@@ -15,6 +15,7 @@ namespace DlanguageApi.Data
         Task<bool> UpdateCourseAsync(Course course);
         Task<bool> DeleteCourseAsync(int id);
         Task<bool> RestoreCourseAsync(int id);
+        Task<List<Course>> SearchCoursesAsync(string searchTerm);
     }
 
     public class CourseRepository : ICoursesRepository
@@ -250,7 +251,7 @@ namespace DlanguageApi.Data
                 }
             }
         }
-        
+
         public async Task<bool> RestoreCourseAsync(int id)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -265,6 +266,47 @@ namespace DlanguageApi.Data
             cmd.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
             return await cmd.ExecuteNonQueryAsync() > 0;
         }
+        public async Task<List<Course>> SearchCoursesAsync(string searchTerm)
+        {
+            var list = new List<Course>();
+            using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            const string sql = @"
+                SELECT 
+                c.course_id, c.course_name, c.course_price, c.course_image,
+                c.course_description, c.category_id, cat.category_name,
+                c.is_active, c.created_at, c.updated_at
+                FROM ms_courses c
+                JOIN ms_category cat ON c.category_id = cat.category_id
+                WHERE c.course_name LIKE @term
+                OR cat.category_name LIKE @term;
+            ";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@term", $"%{searchTerm}%");
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Course
+                {
+                    course_id          = reader.GetInt32("course_id"),
+                    course_name        = reader.GetString("course_name"),
+                    course_price       = reader.GetInt32("course_price"),
+                    course_image       = reader.GetString("course_image"),
+                    course_description = reader.GetString("course_description"),
+                    category_id        = reader.GetInt32("category_id"),
+                    category_name      = reader.GetString("category_name"),
+                    is_active          = reader.GetBoolean("is_active"),
+                    created_at         = reader.GetDateTime("created_at"),
+                    updated_at         = reader.GetDateTime("updated_at")
+                });
+            }
+
+            return list;
+        }
+
 
     }
 }

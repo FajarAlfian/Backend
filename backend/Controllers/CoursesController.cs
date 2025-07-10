@@ -23,11 +23,13 @@ namespace DlanguageApi.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<List<Course>>> GetCourses()
+        public async Task<ActionResult<List<Course>>> GetCourses([FromQuery] string? search = null)
         {
             try
             {
-                var courses = await _coursesRepository.GetAllCoursesAsync();
+                var courses = string.IsNullOrWhiteSpace(search)
+            ? await _coursesRepository.GetAllCoursesAsync()
+            : await _coursesRepository.SearchCoursesAsync(search);
                 return Ok(ApiResult<List<Course>>.SuccessResult(courses, "Daftar kursus berhasil diambil", 200));
             }
             catch (Exception ex)
