@@ -124,7 +124,7 @@ ON DELETE RESTRICT;
 
 -- Add PasswordResetToken and PasswordResetTokenCreatedAt to ms_user
 ALTER TABLE ms_user
-ADD COLUMN PasswordResetToken VARCHAR(255) NULL AFTER password,
+ADD COLUMN PasswordResetToken VARCHAR(255) NULL AFTER PASSWORD,
 ADD COLUMN PasswordResetTokenCreatedAt DATETIME NULL AFTER PasswordResetToken;
 
 -- Add is_verified, email_verification_token, and email_token_created_at columns to ms_user
@@ -142,6 +142,7 @@ ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_verified;
 ALTER TABLE ms_courses
 ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1
 AFTER category_id;
+
 
 -- Insert data into ms_category
 INSERT INTO ms_category (category_name, category_image, category_description, created_at, updated_at) VALUES
@@ -196,7 +197,6 @@ INSERT INTO ms_schedule (schedule_date) VALUES
 ("2025-07-27");
 
 
-
 ALTER TABLE ms_category ADD COLUMN category_banner VARCHAR(255) AFTER category_description;
 
 UPDATE ms_category
@@ -230,3 +230,31 @@ WHERE category_id = 7;
 UPDATE ms_category
 SET category_banner = 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751934667/Screenshot_2025-07-08_073057_kf9rti.png'
 WHERE category_id = 8;
+
+ALTER TABLE ms_payment_method
+ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 0
+AFTER payment_method_id;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 1;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 2;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 3;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 4;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 5;
+
+UPDATE ms_payment_method
+SET is_active = 1
+WHERE payment_method_id = 6;
