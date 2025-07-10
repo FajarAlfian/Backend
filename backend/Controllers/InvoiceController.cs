@@ -19,6 +19,28 @@ namespace DlanguageApi.Controllers
             _checkoutRepository = checkoutRepository;
             _logger = logger;
         }
+        [Authorize(Roles = "admin")]
+        [HttpGet]
+        public async Task<ActionResult<List<Invoice>>> GetAllInvoices()
+        {
+            try
+            {
+                var invoices = await _invoiceRepository.GetAllInvoicesAsync();
+                if (invoices == null || invoices.Count == 0)
+                    return NotFound(ApiResult<object>.Error("Belum ada invoice di sistem.", 404));
+
+                return Ok(ApiResult<List<Invoice>>.SuccessResult(
+                    invoices,
+                    "Daftar semua invoice berhasil diambil",
+                    200
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil daftar semua invoice");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
 
         [HttpGet("user")]
         public async Task<ActionResult<List<Invoice>>> GetInvoicesByUserId()
