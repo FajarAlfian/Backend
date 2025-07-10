@@ -20,6 +20,27 @@ namespace DlanguageApi.Controllers
             _coursesRepository = coursesRepository;
             _logger = logger;
         }
+        [Authorize(Roles = "admin")]
+        [HttpGet("all")]
+        public async Task<ActionResult<List<Course>>> GetAllCoursesAdmin([FromQuery] string? search = null)
+        {
+            try
+            {
+                List<Course> courses = string.IsNullOrWhiteSpace(search)
+                    ? await _coursesRepository.GetAllCoursesAdminAsync()
+                    : await _coursesRepository.SearchCoursesAsync(search);
+
+                return Ok(ApiResult<List<Course>>
+                    .SuccessResult(courses, "Daftar semua kursus (admin) berhasil diambil", 200));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil semua kursus untuk admin");
+                return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
+            }
+        }
+
+
 
         [AllowAnonymous]
         [HttpGet]

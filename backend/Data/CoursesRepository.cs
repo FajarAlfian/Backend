@@ -7,6 +7,7 @@ namespace DlanguageApi.Data
     public interface ICoursesRepository
     {
         Task<List<Course>> GetAllCoursesAsync();
+        Task<List<Course>> GetAllCoursesAdminAsync();
         Task<Course?> GetCourseByIdAsync(int id);
         Task<Course?> GetCourseByCategoryIdAsync(int id);
         Task<List<CourseDetail>> GetPaidCourse(int id);
@@ -57,6 +58,48 @@ namespace DlanguageApi.Data
                             category_name = reader.GetString("category_name"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
+                        });
+                    }
+                }
+            }
+            return courses;
+        }
+        public async Task<List<Course>> GetAllCoursesAdminAsync()
+        {
+            var courses = new List<Course>();
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    SELECT 
+                        c.course_id, c.course_name, c.course_price,
+                        c.course_image, c.course_description,
+                        c.category_id, cat.category_name,
+                        c.is_active, c.created_at, c.updated_at
+                    FROM ms_courses c
+                    LEFT JOIN ms_category cat 
+                    ON c.category_id = cat.category_id
+                    ORDER BY c.course_id
+                ";
+                using (var cmd = new MySqlCommand(query, connection))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        courses.Add(new Course
+                        {
+                            course_id        = reader.GetInt32("course_id"),
+                            course_name      = reader.GetString("course_name"),
+                            course_price     = reader.GetInt32("course_price"),
+                            course_image     = reader.GetString("course_image"),
+                            course_description = reader.GetString("course_description"),
+                            category_id      = reader.GetInt32("category_id"),
+                            category_name    = reader.IsDBNull(reader.GetOrdinal("category_name"))
+                                                ? string.Empty
+                                                : reader.GetString("category_name"),
+                            is_active        = reader.GetBoolean("is_active"),
+                            created_at       = reader.GetDateTime("created_at").ToUniversalTime(),
+                            updated_at       = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
                     }
                 }
@@ -214,7 +257,8 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     UPDATE ms_courses
-                    SET course_name = @course_name, course_price = @course_price, course_image = @course_image, course_description = @course_description, category_id = @category_id,
+                    SET course_name = @course_name, course_price = @course_price, course_image = @course_image,
+                     course_description = @course_description, category_id = @category_id, is_active = @is_active,
                         updated_at = @updated_at
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -225,6 +269,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_image", course.course_image);
                     command.Parameters.AddWithValue("@course_description", course.course_description);
                     command.Parameters.AddWithValue("@category_id", course.category_id);
+                    command.Parameters.AddWithValue("@is_active", course.is_active);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();
