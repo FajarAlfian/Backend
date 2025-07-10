@@ -18,6 +18,7 @@ namespace DlanguageApi.Data
         Task<bool> VerifyEmailAsync(string token);
         Task<bool> UpdateEmailVerificationTokenAsync(int userId, string token);
         Task<bool> VerifyUserEmailAsync(int userId);
+        Task<List<User>> SearchUsersAsync(string searchTerm);
     
     }
     public class UserRepository : IUserRepository
@@ -156,7 +157,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@role", user.role);
                     command.Parameters.AddWithValue("@is_verified", user.is_verified);
                     command.Parameters.AddWithValue("@email_verification_token", user.email_verification_token);
-                    command.Parameters.AddWithValue("@email_token_created_at", user.email_token_created_at?.ToUniversalTime()??(object)DBNull.Value);
+                    command.Parameters.AddWithValue("@email_token_created_at", user.email_token_created_at?.ToUniversalTime() ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@created_at", user.created_at.ToUniversalTime());
                     command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime());
 
@@ -342,7 +343,7 @@ namespace DlanguageApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                
+
                 // Check token validity and update user
                 string query = @"UPDATE ms_user 
                                SET is_verified = 1, 
@@ -351,15 +352,50 @@ namespace DlanguageApi.Data
                                WHERE email_verification_token = @Token 
                                AND email_token_created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
                                AND is_verified = 0";
-                
+
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Token", token);
-                    
+
                     int rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;
                 }
             }
         }
+        public async Task<List<User>> SearchUsersAsync(string searchTerm)
+        {
+            var users = new List<User>();
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string sql = @"
+                SELECT user_id, username, email, password, role, created_at, updated_at
+                FROM ms_user
+                WHERE is_deleted = 0
+                AND (username LIKE @term OR email LIKE @term)
+                ORDER BY username;
+            ";
+
+            using var command = new MySqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@term", $"%{searchTerm}%");
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                users.Add(new User
+                {
+                    user_id    = reader.GetInt32("user_id"),
+                    username   = reader.GetString("username"),
+                    email      = reader.GetString("email"),
+                    password   = reader.GetString("password"),
+                    role       = reader.GetString("role"),
+                    created_at = reader.GetDateTime("created_at").ToUniversalTime(),
+                    updated_at = reader.GetDateTime("updated_at").ToUniversalTime(),
+                });
+            }
+
+            return users;
+        }
+
 }
 }
