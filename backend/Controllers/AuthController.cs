@@ -99,7 +99,7 @@ namespace DlanguageApi.Controllers
                 }
 
                 var user = await _userRepository.GetUserByEmailAsync(request.Email);
-                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password)|| user.is_deleted)
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password))
                 {
                     return Unauthorized(ApiResult<object>.Error("Email atau password salah", 401));
                 }
