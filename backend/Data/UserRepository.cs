@@ -39,9 +39,8 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, role, created_at, updated_at
+                    SELECT user_id, username, email, password, role, is_deleted, created_at, updated_at
                     FROM ms_user
-                    WHERE is_deleted = 0
                     ORDER BY username";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -55,6 +54,7 @@ namespace DlanguageApi.Data
                             email = reader.GetString("email"),
                             password = reader.GetString("password"),
                             role = reader.GetString("role"),
+                            is_deleted = reader.GetBoolean("is_deleted"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
@@ -70,10 +70,9 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, role, created_at, updated_at
+                    SELECT user_id, username, email, password, role, is_deleted, created_at, updated_at
                     FROM ms_user
-                    WHERE user_id = @user_id
-                    AND is_deleted = 0";
+                    WHERE user_id = @user_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@user_id", id);
@@ -88,6 +87,7 @@ namespace DlanguageApi.Data
                                 email = reader.GetString("email"),
                                 password = reader.GetString("password"),
                                 role = reader.GetString("role"),
+                                is_deleted = reader.GetBoolean("is_deleted"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                             };
@@ -180,6 +180,7 @@ namespace DlanguageApi.Data
                         email = @email,
                         password = @password,
                         role = @role,
+                        is_deleted = @is_deleted,
                         updated_at = @updated_at
                     WHERE user_id = @user_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -189,6 +190,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@email", user.email);
                     command.Parameters.AddWithValue("@password", user.password);
                     command.Parameters.AddWithValue("@role", user.role);
+                    command.Parameters.AddWithValue("@is_deleted", user.is_deleted);
                     command.Parameters.AddWithValue("@updated_at", user.updated_at.ToUniversalTime());
                     var rowsAffected = await command.ExecuteNonQueryAsync();
                     return rowsAffected > 0;

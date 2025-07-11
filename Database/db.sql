@@ -187,7 +187,7 @@ INSERT INTO ms_payment_method (payment_method_name, payment_method_logo) VALUES
 ("BCA","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325283/bca_mrhl0t.svg"),
 ("BNI","https://res.cloudinary.com/dllo4dtar/image/upload/v1751325285/bni_zmffs5.png");
 
---insert default date
+-- insert default date
 INSERT INTO ms_schedule (schedule_date) VALUES
 ("2025-07-21"),
 ("2025-07-22"),
@@ -297,3 +297,28 @@ WHERE category_id = 7;
 UPDATE ms_category
 SET is_active = 1
 WHERE category_id = 8;
+
+-- update ms_courses
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 1;
+
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 2;
+
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 3;
+
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 4;
+
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 5;
+
+UPDATE ms_courses
+SET is_active = 1
+WHERE course_id = 6;
