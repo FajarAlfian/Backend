@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using DlanguageApi.Data;
 using DlanguageApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace DlanguageApi.Controllers
 {
@@ -100,6 +101,32 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
+
+        [Authorize(Roles = "admin")]
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchUser(int id, [FromBody] JsonPatchDocument<User> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest(ApiResult<object>.Error("Payload patch tidak boleh kosong", 400));
+
+            var existing = await _userRepository.GetUserByIdAsync(id);
+            if (existing == null)
+                return NotFound(ApiResult<object>.Error($"User ID {id} tidak ditemukan", 404));
+
+            patchDoc.ApplyTo(existing, ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Error(
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
+
+            existing.updated_at = DateTime.UtcNow;
+            var ok = await _userRepository.UpdateUserAsync(existing);
+            if (!ok)
+                return StatusCode(500, ApiResult<object>.Error("Gagal menyimpan perubahan", 500));
+
+            return NoContent();
+        }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)

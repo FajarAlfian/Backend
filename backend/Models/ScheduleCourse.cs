@@ -12,6 +12,7 @@ namespace DlanguageApi.Models
         [Required]
         public int schedule_id { get; set; }
         public string? schedule_date { get; set; } = string.Empty;
+        public bool is_active { get; set; } = true;
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
@@ -20,11 +21,15 @@ namespace DlanguageApi.Models
     public class ScheduleCourseRequest
     {
         [Required]
-        public int course_id { get; set; } 
+        public int course_id { get; set; }
 
         [Required]
         public int schedule_id { get; set; }
-    }
+    }
+       public class ActiveDto
+        {
+            public bool IsActive { get; set; }
+        }
     
 
 }
