@@ -105,7 +105,7 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT user_id, username, email, password, role, created_at, updated_at, is_verified
+                    SELECT user_id, username, email, password, role, created_at, updated_at, is_verified, is_deleted
                     FROM ms_user
                     WHERE email = @email";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -124,7 +124,8 @@ namespace DlanguageApi.Data
                                 role = reader.GetString("role"),
                                 created_at = reader.GetDateTime("created_at").ToUniversalTime(),
                                 updated_at = reader.GetDateTime("updated_at").ToUniversalTime(),
-                                is_verified = reader.GetBoolean("is_verified")
+                                is_verified = reader.GetBoolean("is_verified"),
+                                is_deleted = reader.GetBoolean("is_deleted")
                             };
                         }
                     }
