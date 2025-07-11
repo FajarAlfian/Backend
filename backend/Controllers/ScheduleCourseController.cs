@@ -18,11 +18,11 @@ namespace DlanguageApi.Controllers
             IScheduleCourseRepository scheduleCourseRepository,
             IScheduleRepository scheduleRepository,
             ILogger<ScheduleCourseController> logger)
-            {
-                _scheduleCourseRepository = scheduleCourseRepository;
+        {
+            _scheduleCourseRepository = scheduleCourseRepository;
             _scheduleRepository = scheduleRepository;
-                _logger = logger;
-            }
+            _logger = logger;
+        }
 
         [Authorize(Roles = "admin")]
         [HttpPost("with-date")]
@@ -63,7 +63,7 @@ namespace DlanguageApi.Controllers
         }
         [AllowAnonymous]
         [HttpGet]
-        
+
         public async Task<ActionResult<List<ScheduleCourse>>> GetScheduleCourse()
         {
             try
@@ -79,7 +79,7 @@ namespace DlanguageApi.Controllers
         }
         [AllowAnonymous]
         [HttpGet("{id}")]
-     
+
         public async Task<ActionResult<ScheduleCourse>> GetScheduleCourse(int id)
         {
             try
@@ -97,7 +97,7 @@ namespace DlanguageApi.Controllers
         }
         [AllowAnonymous]
         [HttpGet("course/{id}")]
-             public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
+        public async Task<ActionResult<ScheduleCourse>> GetScheduleByCourseID(int id)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace DlanguageApi.Controllers
             }
 
         }
-        
+
         [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<ScheduleCourse>> CreateScheduleCourse([FromBody] ScheduleCourseRequest request)
@@ -138,7 +138,7 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-        
+
         [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateScheduleCourse(int id, [FromBody] ScheduleCourseRequest request)
@@ -159,7 +159,7 @@ namespace DlanguageApi.Controllers
                 };
                 var success = await _scheduleCourseRepository.UpdateScheduleCourseAsync(updateData);
                 if (success)
-                    return NoContent(); 
+                    return NoContent();
 
                 return StatusCode(500, ApiResult<object>.Error("Gagal mengupdate schedule course ", 500));
             }
@@ -169,28 +169,29 @@ namespace DlanguageApi.Controllers
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
         }
-        
+
+
         [Authorize(Roles = "admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteScheduleCourse(int id)
+        [HttpPatch("{id}/active")]
+        public async Task<IActionResult> ToggleActive(int id, [FromBody] ActiveDto dto)
         {
             try
             {
-                var existingScheduleCourse = await _scheduleCourseRepository.GetScheduleCourseByIdAsync(id);
-                if (existingScheduleCourse == null) 
-                    return NotFound(ApiResult<object>.Error($"Schedule course dengan ID {id} tidak ditemukan", 404));
+                var existing = await _scheduleCourseRepository.GetScheduleCourseByIdAsync(id);
+                if (existing == null)
+                    return NotFound(ApiResult<object>.Error($"ScheduleCourse dengan ID {id} tidak ditemukan", 404));
 
-                var success = await _scheduleCourseRepository.DeleteScheduleCourseAsync(id);
-                if (success)
-                    return NoContent();
+                var success = await _scheduleCourseRepository.SetScheduleCourseActiveAsync(id, dto.IsActive);
+                if (!success)
+                    return StatusCode(500, ApiResult<object>.Error("Gagal mengubah status aktif", 500));
 
-                return StatusCode(500, ApiResult<object>.Error("Gagal menghapus schedule course", 500));
+                return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saat menghapus schedule course dengan ID {schedule_course_id}", id);
+                _logger.LogError(ex, "Error saat toggle active pada ScheduleCourse ID {id}", id);
                 return StatusCode(500, ApiResult<object>.Error("Terjadi kesalahan server", 500));
             }
-        }
+        }
     }
 }

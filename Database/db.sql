@@ -322,3 +322,7 @@ WHERE course_id = 5;
 UPDATE ms_courses
 SET is_active = 1
 WHERE course_id = 6;
+
+ALTER TABLE tr_schedule_course
+ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1
+AFTER schedule_id;

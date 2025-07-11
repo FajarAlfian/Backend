@@ -1,5 +1,6 @@
 using System.Data;
 using MySql.Data.MySqlClient;
+using Microsoft.Extensions.Configuration;
 using DlanguageApi.Models;
 
 namespace DlanguageApi.Data
@@ -8,10 +9,10 @@ namespace DlanguageApi.Data
     {
         Task<List<ScheduleCourse>> GetAllScheduleCourseAsync();
         Task<ScheduleCourse?> GetScheduleCourseByIdAsync(int id);
-        Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int id);
-        Task<int> CreateScheduleCourseAsync(ScheduleCourse ScheduleCourse);
-        Task<bool> UpdateScheduleCourseAsync(ScheduleCourse ScheduleCourse);
-        Task<bool> DeleteScheduleCourseAsync(int id);
+        Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int courseId);
+        Task<int> CreateScheduleCourseAsync(ScheduleCourse scheduleCourse);
+        Task<bool> UpdateScheduleCourseAsync(ScheduleCourse scheduleCourse);
+        Task<bool> SetScheduleCourseActiveAsync(int id, bool isActive);
     }
 
     public class ScheduleCourseRepository : IScheduleCourseRepository
@@ -24,166 +25,183 @@ namespace DlanguageApi.Data
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
-        // Read
         public async Task<List<ScheduleCourse>> GetAllScheduleCourseAsync()
         {
-            var scheduleCourse = new List<ScheduleCourse>();
-            using (var connection = new MySqlConnection(_connectionString))
+            var list = new List<ScheduleCourse>();
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                SELECT sc.schedule_course_id,
+                       sc.course_id,
+                       sc.schedule_id,
+                       sch.schedule_date,
+                       sc.created_at,
+                       sc.updated_at,
+                       sc.is_active
+                  FROM tr_schedule_course sc
+            INNER JOIN ms_schedule sch ON sc.schedule_id = sch.schedule_id
+                 WHERE sc.is_active = 1";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                await connection.OpenAsync();
-                string queryString = @"
-                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
-                    FROM tr_schedule_course s
-                    INNER JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id";
-                using (var command = new MySqlCommand(queryString, connection))
-                using (var reader = await command.ExecuteReaderAsync())
+                list.Add(new ScheduleCourse
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        scheduleCourse.Add(new ScheduleCourse
-                        {
-                            schedule_course_id = reader.GetInt32("schedule_course_id"),
-                            course_id = reader.GetInt32("course_id"),
-                            schedule_id = reader.GetInt32("schedule_id"),
-                            schedule_date = reader.IsDBNull(reader.GetOrdinal("schedule_date")) ? null : reader.GetString("schedule_date"),
-                            created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                            updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
-                        });
-                    }
-                }
+                    schedule_course_id = reader.GetInt32("schedule_course_id"),
+                    course_id          = reader.GetInt32("course_id"),
+                    schedule_id        = reader.GetInt32("schedule_id"),
+                    schedule_date      = reader.IsDBNull(reader.GetOrdinal("schedule_date"))
+                                            ? null
+                                            : reader.GetString("schedule_date"),
+                    created_at         = reader.GetDateTime("created_at").ToUniversalTime(),
+                    updated_at         = reader.GetDateTime("updated_at").ToUniversalTime(),
+                    is_active          = reader.GetBoolean("is_active")
+                });
             }
-            return scheduleCourse;
+
+            return list;
         }
 
-        // Read by ID
         public async Task<ScheduleCourse?> GetScheduleCourseByIdAsync(int id)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                SELECT sc.schedule_course_id,
+                       sc.course_id,
+                       sc.schedule_id,
+                       sch.schedule_date,
+                       sc.created_at,
+                       sc.updated_at,
+                       sc.is_active
+                  FROM tr_schedule_course sc
+            LEFT JOIN ms_schedule sch ON sc.schedule_id = sch.schedule_id
+                 WHERE sc.schedule_course_id = @id
+                   AND sc.is_active = 1";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                await connection.OpenAsync();
-                string queryString = @"
-                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
-                    FROM tr_schedule_course s
-                    LEFT JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id
-                    WHERE schedule_course_id = @schedule_course_id";
-                using (var command = new MySqlCommand(queryString, connection))
+                return new ScheduleCourse
                 {
-                    command.Parameters.AddWithValue("@schedule_course_id", id);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
-                        {
-                            return new ScheduleCourse
-                            {
-                                schedule_course_id = reader.GetInt32("schedule_course_id"),
-                                course_id = reader.GetInt32("course_id"),
-                                schedule_id = reader.GetInt32("schedule_id"),
-                                schedule_date = reader.IsDBNull(reader.GetOrdinal("schedule_date")) ? null : reader.GetString("schedule_date"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(),
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
-                            };
-                        }
-                    }
-                }
+                    schedule_course_id = reader.GetInt32("schedule_course_id"),
+                    course_id          = reader.GetInt32("course_id"),
+                    schedule_id        = reader.GetInt32("schedule_id"),
+                    schedule_date      = reader.IsDBNull(reader.GetOrdinal("schedule_date"))
+                                            ? null
+                                            : reader.GetString("schedule_date"),
+                    created_at         = reader.GetDateTime("created_at").ToUniversalTime(),
+                    updated_at         = reader.GetDateTime("updated_at").ToUniversalTime(),
+                    is_active          = reader.GetBoolean("is_active")
+                };
             }
+
             return null;
         }
 
-        // Read schedule by course_id
-        public async Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int id)
+        public async Task<List<ScheduleCourse>> GetScheduleCourseByCourseIdAsync(int courseId)
         {
-            var scheduleCourse = new List<ScheduleCourse>();
-            using (var connection = new MySqlConnection(_connectionString))
+            var list = new List<ScheduleCourse>();
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                SELECT sc.schedule_course_id,
+                       sc.course_id,
+                       sc.schedule_id,
+                       sch.schedule_date,
+                       sc.created_at,
+                       sc.updated_at,
+                       sc.is_active
+                  FROM tr_schedule_course sc
+            LEFT JOIN ms_schedule sch ON sc.schedule_id = sch.schedule_id
+                 WHERE sc.course_id = @courseId
+                   AND sc.is_active = 1";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@courseId", courseId);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                await connection.OpenAsync();
-                string queryString = @"
-                    SELECT s.schedule_course_id, s.course_id, s.schedule_id, sch.schedule_date, s.created_at, s.updated_at
-                    FROM tr_schedule_course s
-                    LEFT JOIN ms_schedule sch ON s.schedule_id = sch.schedule_id
-                    WHERE course_id = @course_id";
-                using (var command = new MySqlCommand(queryString, connection))
+                list.Add(new ScheduleCourse
                 {
-                    command.Parameters.AddWithValue("@course_id", id);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            scheduleCourse.Add(new ScheduleCourse
-                            {
-                                schedule_course_id = reader.GetInt32("schedule_course_id"),
-                                course_id = reader.GetInt32("course_id"),
-                                schedule_id = reader.GetInt32("schedule_id"),
-                                schedule_date = reader.IsDBNull(reader.GetOrdinal("schedule_date")) ? null : reader.GetString("schedule_date"),
-                                created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
-                                updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
-                            });
-                        }
-                    }
-                }
+                    schedule_course_id = reader.GetInt32("schedule_course_id"),
+                    course_id          = reader.GetInt32("course_id"),
+                    schedule_id        = reader.GetInt32("schedule_id"),
+                    schedule_date      = reader.IsDBNull(reader.GetOrdinal("schedule_date"))
+                                            ? null
+                                            : reader.GetString("schedule_date"),
+                    created_at         = reader.GetDateTime("created_at").ToUniversalTime(),
+                    updated_at         = reader.GetDateTime("updated_at").ToUniversalTime(),
+                    is_active          = reader.GetBoolean("is_active")
+                });
             }
-            return scheduleCourse;
+
+            return list;
         }
-        
-        // Create
+
         public async Task<int> CreateScheduleCourseAsync(ScheduleCourse scheduleCourse)
         {
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string queryString = @"
-                    INSERT INTO tr_schedule_course (course_id, schedule_id, created_at, updated_at)
-                    VALUES (@course_id, @schedule_id, @created_at, @updated_at);
-                    SELECT LAST_INSERT_ID();";
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@course_id", scheduleCourse.course_id);
-                    command.Parameters.AddWithValue("@schedule_id", scheduleCourse.schedule_id);
-                    command.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
-                    var result = await command.ExecuteScalarAsync();
-                    return Convert.ToInt32(result);
-                }
-            }
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                INSERT INTO tr_schedule_course
+                    (course_id, schedule_id, created_at, updated_at, is_active)
+                VALUES
+                    (@course_id, @schedule_id, @created_at, @updated_at, 1);
+                SELECT LAST_INSERT_ID();";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@course_id", scheduleCourse.course_id);
+            cmd.Parameters.AddWithValue("@schedule_id", scheduleCourse.schedule_id);
+            cmd.Parameters.AddWithValue("@created_at", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
+
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result);
         }
-        
-        // Update
+
+        // UPDATE course & schedule
         public async Task<bool> UpdateScheduleCourseAsync(ScheduleCourse scheduleCourse)
         {
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string queryString = @"
-                    UPDATE tr_schedule_course
-                    SET course_id = @course_id, schedule_id = @schedule_id, updated_at = @updated_at
-                    WHERE schedule_course_id = @schedule_course_id";
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@schedule_course_id", scheduleCourse.schedule_course_id);
-                    command.Parameters.AddWithValue("@course_id", scheduleCourse.course_id);
-                    command.Parameters.AddWithValue("@schedule_id", scheduleCourse.schedule_id);
-                    command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                UPDATE tr_schedule_course
+                   SET course_id   = @course_id,
+                       schedule_id = @schedule_id,
+                       updated_at  = @updated_at
+                 WHERE schedule_course_id = @schedule_course_id";
 
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
-                    return rowsAffected > 0;
-                }
-            }
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@schedule_course_id", scheduleCourse.schedule_course_id);
+            cmd.Parameters.AddWithValue("@course_id", scheduleCourse.course_id);
+            cmd.Parameters.AddWithValue("@schedule_id", scheduleCourse.schedule_id);
+            cmd.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
+
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
         }
-        // Delete
-        public async Task<bool> DeleteScheduleCourseAsync(int id)
+
+        public async Task<bool> SetScheduleCourseActiveAsync(int id, bool isActive)
         {
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string queryString = @"
-                    DELETE FROM tr_schedule_course
-                    WHERE schedule_course_id = @schedule_course_id";
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@schedule_course_id", id);
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
-                    return rowsAffected > 0;
-                }
-            }
-        }
-    }
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"
+                UPDATE tr_schedule_course
+                   SET is_active  = @isActive,
+                       updated_at = @updated_at
+                 WHERE schedule_course_id = @id";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@isActive",  isActive ? 1 : 0);
+            cmd.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@id",          id);
+
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+    }
 }
