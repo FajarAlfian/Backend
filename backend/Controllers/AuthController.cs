@@ -99,14 +99,19 @@ namespace DlanguageApi.Controllers
                 }
 
                 var user = await _userRepository.GetUserByEmailAsync(request.Email);
-                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password))
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password)|| user.is_deleted)
                 {
                     return Unauthorized(ApiResult<object>.Error("Email atau password salah", 401));
                 }
+                if (user.is_deleted)
+                {
+                    return Unauthorized(ApiResult<object>.Error("Akun Anda sudah dihapus", 401));
+                }
+
                  if (!user.is_verified)
-                 {
-                 return Unauthorized(ApiResult<object>.Error("Email belum diverifikasi. Silakan cek inbox Anda.", 401));
-                 }
+                {
+                    return Unauthorized(ApiResult<object>.Error("Email belum diverifikasi. Silakan cek inbox Anda.", 401));
+                }
 
                 // Generate JWT Token
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
