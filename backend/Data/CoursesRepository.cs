@@ -37,10 +37,11 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, c.is_active, cat.category_name, c.created_at, c.updated_at
+                    SELECT c.course_id, c.course_name, c.course_price, c.course_image, c.course_description, c.category_id, c.is_active, c.is_deleted, cat.category_name, c.created_at, c.updated_at
                     FROM ms_courses c
                     LEFT JOIN ms_category cat ON c.category_id = cat.category_id
                     WHERE c.is_active = 1
+                    AND c.is_deleted = 0
                     ORDER BY c.course_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -75,10 +76,11 @@ namespace DlanguageApi.Data
                         c.course_id, c.course_name, c.course_price,
                         c.course_image, c.course_description,
                         c.category_id, cat.category_name,
-                        c.is_active, c.created_at, c.updated_at
+                        c.is_active, c.is_deleted, c.created_at, c.updated_at
                     FROM ms_courses c
                     LEFT JOIN ms_category cat 
                     ON c.category_id = cat.category_id
+                    WHERE c.is_deleted = 0
                     ORDER BY c.course_id
                 ";
                 using (var cmd = new MySqlCommand(query, connection))
@@ -259,6 +261,7 @@ namespace DlanguageApi.Data
                     UPDATE ms_courses
                     SET course_name = @course_name, course_price = @course_price, course_image = @course_image,
                      course_description = @course_description, category_id = @category_id, is_active = @is_active,
+                     is_deleted = @is_deleted,
                         updated_at = @updated_at
                     WHERE course_id = @course_id";
                 using (var command = new MySqlCommand(queryString, connection))
@@ -270,6 +273,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@course_description", course.course_description);
                     command.Parameters.AddWithValue("@category_id", course.category_id);
                     command.Parameters.AddWithValue("@is_active", course.is_active);
+                    command.Parameters.AddWithValue("@is_deleted", course.is_deleted);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();

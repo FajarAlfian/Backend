@@ -130,6 +130,15 @@ CREATE TABLE tr_invoice_detail (
 ON DELETE RESTRICT
 );
 
+ALTER TABLE ms_courses
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active;
+
+ALTER TABLE ms_category
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active;
+
+ALTER TABLE ms_payment_method
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active;
+
 -- Insert data into ms_category
 INSERT INTO ms_category (is_active, category_name, category_image, category_banner, category_description, created_at, updated_at) VALUES
 (1, 'Arabic', "https://flagcdn.com/w320/sa.png", 'https://res.cloudinary.com/ddd8hwouh/image/upload/v1751933810/Screenshot_2025-07-08_071443_fdqm97.png', 'Kursus Bahasa Arab dirancang untuk membekali peserta dengan kemampuan membaca, menulis, mendengarkan, dan berbicara dalam bahasa Arab secara efektif. Bahasa Arab merupakan salah satu bahasa resmi dunia dan digunakan secara luas di Timur Tengah, Afrika Utara, serta negara-negara Islam. Kursus ini membahas mulai dari dasar huruf dan angka Arab, tata bahasa (nahwu dan sharaf), percakapan sehari-hari, hingga pemahaman teks Al-Quran dan literatur Arab modern. Dengan metode pembelajaran interaktif, siswa diajak untuk praktik dialog, mendengarkan native speaker, serta memahami kebudayaan Arab yang kaya. Kursus ini sangat cocok bagi pemula, pelajar, maupun profesional yang ingin meningkatkan kompetensi komunikasi atau persiapan studi dan bisnis di negara-negara Arab.', NOW(), NOW()),

@@ -33,7 +33,7 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     SELECT payment_method_id, is_active, payment_method_name, payment_method_logo, created_at, updated_at
-                    FROM ms_payment_method where is_active = 1
+                    FROM ms_payment_method WHERE is_active = 1
                     ORDER BY payment_method_name";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -62,8 +62,9 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT payment_method_id,is_active, payment_method_name, payment_method_logo, created_at, updated_at
+                    SELECT payment_method_id, is_active, is_deleted, payment_method_name, payment_method_logo, created_at, updated_at
                     FROM ms_payment_method
+                    WHERE is_deleted = 0
                     ORDER BY payment_method_name";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -74,6 +75,7 @@ namespace DlanguageApi.Data
                         {
                             payment_method_id = reader.GetInt32("payment_method_id"),
                             is_active = reader.GetBoolean("is_active"),
+                            is_deleted = reader.GetBoolean("is_deleted"),
                             payment_method_name = reader.GetString("payment_method_name"),
                             payment_method_logo = reader.GetString("payment_method_logo"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(),
@@ -149,12 +151,13 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     UPDATE ms_payment_method
-                    SET is_active = @is_active, payment_method_name = @payment_method_name, payment_method_logo = @payment_method_logo, updated_at = @updated_at
+                    SET is_active = @is_active, is_deleted = @is_deleted, payment_method_name = @payment_method_name, payment_method_logo = @payment_method_logo, updated_at = @updated_at
                     WHERE payment_method_id = @payment_method_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     command.Parameters.AddWithValue("@payment_method_id", paymentMethod.payment_method_id);
                     command.Parameters.AddWithValue("@is_active", paymentMethod.is_active);
+                    command.Parameters.AddWithValue("@is_deleted", paymentMethod.is_deleted);
                     command.Parameters.AddWithValue("@payment_method_name", paymentMethod.payment_method_name);
                     command.Parameters.AddWithValue("@payment_method_logo", paymentMethod.payment_method_logo);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow);
