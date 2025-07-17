@@ -33,8 +33,9 @@ namespace DlanguageApi.Data
             {
                 await connection.OpenAsync();
                 string queryString = @"
-                    SELECT category_id, category_name, category_description, category_image, category_banner, is_active, created_at, updated_at
+                    SELECT category_id, category_name, category_description, category_image, category_banner, is_active, is_deleted, created_at, updated_at
                     FROM ms_category
+                    WHERE is_deleted = 0
                     ORDER BY category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -49,6 +50,7 @@ namespace DlanguageApi.Data
                             category_image = reader.GetString("category_image"),
                             category_banner = reader.GetString("category_banner"),
                             is_active = reader.GetBoolean("is_active"),
+                            is_deleted = reader.GetBoolean("is_deleted"),
                             created_at = reader.GetDateTime("created_at").ToUniversalTime(), 
                             updated_at = reader.GetDateTime("updated_at").ToUniversalTime()
                         });
@@ -193,7 +195,7 @@ namespace DlanguageApi.Data
                 await connection.OpenAsync();
                 string queryString = @"
                     UPDATE ms_category
-                    SET category_name = @category_name, category_description = @category_description, category_image = @category_image, category_banner = @category_banner, is_active = @is_active, updated_at = @updated_at
+                    SET category_name = @category_name, category_description = @category_description, category_image = @category_image, category_banner = @category_banner, is_active = @is_active, is_deleted = @is_deleted, updated_at = @updated_at
                     WHERE category_id = @category_id";
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -203,6 +205,7 @@ namespace DlanguageApi.Data
                     command.Parameters.AddWithValue("@category_image", category.category_image);
                     command.Parameters.AddWithValue("@category_banner", category.category_banner);
                     command.Parameters.AddWithValue("@is_active", category.is_active);
+                    command.Parameters.AddWithValue("@is_deleted", category.is_deleted);
                     command.Parameters.AddWithValue("@updated_at", DateTime.UtcNow); 
 
                     var rowsAffected = await command.ExecuteNonQueryAsync();

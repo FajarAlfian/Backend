@@ -7,6 +7,7 @@ namespace DlanguageApi.Models
         public int payment_method_id { get; set; }
 
         public bool is_active { get; set; } = true;
+        public bool is_deleted { get; set; } = false;
 
         [Required]
         [StringLength(100)]

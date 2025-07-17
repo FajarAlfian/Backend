@@ -178,15 +178,12 @@ namespace DlanguageApi.Controllers
             if (existing == null)
                 return NotFound(ApiResult<object>.Error($"Kategori dengan ID {id} tidak ditemukan", 404));
 
-            // Apply patch & validasi
             patchDoc.ApplyTo(existing, ModelState);
             if (!ModelState.IsValid)
                 return BadRequest(ApiResult<object>.Error(
                     ModelState.Values.SelectMany(v => v.Errors)
                                     .Select(e => e.ErrorMessage)
                                     .ToList(), 400));
-
-            // Simpan perubahan
             var ok = await _categoriesRepository.UpdateCategoryAsync(existing);
             if (!ok)
                 return StatusCode(500, ApiResult<object>.Error("Gagal menyimpan perubahan", 500));

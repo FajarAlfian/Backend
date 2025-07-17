@@ -19,6 +19,7 @@ namespace DlanguageApi.Models
         public string category_image { get; set; } = string.Empty;
         public string category_banner { get; set; } = string.Empty;
         public bool is_active { get; set; } = false;
+        public bool is_deleted { get; set; } = false;
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;

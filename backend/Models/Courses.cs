@@ -22,6 +22,7 @@ namespace DlanguageApi.Models
 
         public string category_name { get; set; } = string.Empty;
         public bool is_active { get; set; } = true;
+        public bool is_deleted { get; set; } = false;
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
